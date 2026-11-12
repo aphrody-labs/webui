@@ -18,7 +18,7 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
   webServer: {
-    command: `pnpm build:e2e && cargo run -p microsoft-webui-cli -- serve ./tests/fixtures/router-app/src --plugin=webui --servedir ./tests/fixtures/router-app/dist --state ./tests/fixtures/router-app/data/state.json --port ${port}`,
+    command: `bun run build:e2e && cargo run -p microsoft-webui-cli -- serve ./tests/fixtures/router-app/src --plugin=webui --servedir ./tests/fixtures/router-app/dist --state ./tests/fixtures/router-app/data/state.json --port ${port}`,
     port,
     reuseExistingServer: true,
   },

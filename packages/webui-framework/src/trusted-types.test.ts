@@ -189,7 +189,7 @@ test('automatic policy creation exposes no global state or trust operations', ()
   assert.deepEqual(Reflect.ownKeys(window), before);
 });
 
-test('an independent framework copy cannot recover an existing policy or bypass duplicate-name denial', async () => {
+test('an independent framework copy cannot recover an existing policy or bypass duplicate-name denial', { skip: (globalThis as { Bun?: unknown }).Bun !== undefined && "Bun: a ?query import resolves to the already-loaded module, so no independent copy exists" }, async () => {
   const f = fixture();
   const first = { h: '<p>First</p>' };
   registerTrustedTemplateBlock(first);

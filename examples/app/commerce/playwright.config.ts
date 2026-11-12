@@ -38,5 +38,5 @@ export default defineConfig({
     },
   ],
   // Server must be started separately before running tests:
-  //   pnpm start:server  (cargo run on port 3004)
+  //   bun run start:server  (cargo run on port 3004)
 });

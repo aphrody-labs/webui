@@ -9,7 +9,7 @@ Build the release native addon first. From the repository root on Windows:
 
 ```powershell
 cargo build --release -p microsoft-webui-node
-pnpm --filter @microsoft/webui --filter @microsoft/webui-framework build
+bun run --filter @microsoft/webui --filter @microsoft/webui-framework build
 $env:WEBUI_ADDON_PATH = Join-Path (Get-Location) 'target\release\webui_node.dll'
 node examples\integration\lazy-ui-bench\ntp.mjs
 node examples\integration\lazy-ui-bench\triggers.mjs
@@ -978,7 +978,7 @@ controls and measures rendering one pack at build time.
 ## UI responsiveness
 
 ```powershell
-node --test examples\integration\lazy-ui-bench\responsiveness.test.mjs
+bun test examples\integration\lazy-ui-bench\responsiveness.test.mjs
 node examples\integration\lazy-ui-bench\responsiveness.mjs
 ```
 

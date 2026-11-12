@@ -16,9 +16,12 @@ const COMMANDS: &[(&str, &[&str])] = &[
             "generate",
         ],
     ),
-    ("pnpm", &["--filter", "@microsoft/webui-desktop", "test"]),
     (
-        "node",
+        "bun",
+        &["run", "--filter", "@microsoft/webui-desktop", "test"],
+    ),
+    (
+        "bun",
         &[
             "packages/webui-desktop/scripts/stage-rust-assets.mjs",
             "--check",
@@ -26,19 +29,19 @@ const COMMANDS: &[(&str, &[&str])] = &[
         ],
     ),
     (
-        "node",
+        "bun",
         &[
-            "--test",
-            "crates/webui-desktop-build/tests/support/target-output.test.mjs",
+            "test",
+            "./crates/webui-desktop-build/tests/support/target-output.test.mjs",
         ],
     ),
-    ("node", &["crates/webui-desktop-build/tests/run-rust.mjs"]),
+    ("bun", &["crates/webui-desktop-build/tests/run-rust.mjs"]),
     (
-        "node",
+        "bun",
         &["crates/webui-desktop-build/tests/run-typescript.mjs"],
     ),
     (
-        "node",
+        "bun",
         &["packages/webui-desktop/scripts/test-lazy-browser.mjs"],
     ),
 ];

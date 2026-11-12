@@ -77,12 +77,19 @@ test('a native render-root containment proof avoids repeated parent reads', () =
 });
 
 async function collectAfterTurn(): Promise<void> {
+  const gc = await fullGc();
+  await new Promise(resolve => setTimeout(resolve, 0));
+  gc();
+}
+
+/** A synchronous full collection: Bun.gc(true) on Bun, V8's exposed gc() on Node. */
+async function fullGc(): Promise<() => void> {
+  const bun = (globalThis as { Bun?: { gc(force: boolean): void } }).Bun;
+  if (bun) return () => bun.gc(true);
   const { setFlagsFromString } = await import('node:v8');
   const { runInNewContext } = await import('node:vm');
   setFlagsFromString('--expose-gc');
-  const gc = runInNewContext('gc') as () => void;
-  await new Promise(resolve => setTimeout(resolve, 0));
-  gc();
+  return runInNewContext('gc') as () => void;
 }
 
 test('idle completion is asynchronous and rejects an unavailable root', async () => {

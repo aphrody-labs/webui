@@ -6,16 +6,13 @@ import { createRequire } from 'node:module';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { gzipSync } from 'node:zlib';
-import { minifyClient } from '../../../examples/minify-client.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 const require = createRequire(join(root, 'packages', 'webui-framework', 'package.json'));
-const support = createRequire(join(root, 'packages', 'webui-test-support', 'package.json'));
-const { build } = support('esbuild');
 const { chromium } = require('@playwright/test');
 const [baseline, comparison] = process.argv.slice(2);
 if (!baseline) {
-  throw new Error('Usage: node benchmarks/render-completion.mjs <baseline-ref> [comparison-ref]. Start tests/server.ts first.');
+  throw new Error('Usage: bun benchmarks/render-completion.mjs <baseline-ref> [comparison-ref]. Start tests/server.ts first.');
 }
 const references = { baseline, ...(comparison ? { comparison } : {}), current: undefined };
 const binding = process.env.BENCH_BINDING ?? 'attribute';
@@ -27,7 +24,7 @@ const output = { samples: 30, batchesPerSample: 20, binding, references, bundles
 const percentile = (values, p) => [...values].sort((a, b) => a - b)[Math.ceil(values.length * p) - 1];
 const git = args => execFileSync('git', args, { cwd: root, encoding: 'utf8' });
 const browser = await chromium.launch({ args: ['--js-flags=--expose-gc', '--enable-precise-memory-info'] });
-output.environment = { node: process.version, chromium: browser.version() };
+output.environment = { bun: Bun.version, chromium: browser.version() };
 try {
   const pages = new Map();
   for (const [version, reference] of Object.entries(references)) {
@@ -37,14 +34,13 @@ try {
         if (path.endsWith('.ts')) sources.set(path, git(['show', `${reference}:${path}`]));
       }
     }
-    const result = await build({
-      entryPoints: [join(root, 'packages', 'webui-framework', 'tests', 'fixtures', 'render-completion', 'element.ts')],
-      bundle: true, minify: false, format: 'iife', platform: 'browser', target: 'es2022', write: false,
-      supported: { 'import-attributes': true },
-      metafile: true, outfile: join(root, 'target', `render-benchmark-${version}.js`),
+    // In-memory production bundle: Bun minifies, as the shared client build does.
+    const result = await Bun.build({
+      entrypoints: [join(root, 'packages', 'webui-framework', 'tests', 'fixtures', 'render-completion', 'element.ts')],
+      minify: true, format: 'iife', target: 'browser',
       define: { __WEBUI_DEV__: 'false' },
       tsconfig: join(root, 'packages', 'webui-framework', 'tsconfig.test.json'),
-      plugins: [minifyClient(), {
+      plugins: [{
         name: 'snapshot-source',
         setup(plugin) {
           if (!reference) return;
@@ -57,7 +53,7 @@ try {
         },
       }],
     });
-    const code = result.outputFiles[0].text;
+    const code = await result.outputs[0].text();
     output.bundles[version] = { bytes: Buffer.byteLength(code), gzip: gzipSync(code).length };
     const page = await browser.newPage();
     const errors = [];

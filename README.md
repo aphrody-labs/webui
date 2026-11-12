@@ -56,7 +56,7 @@ pip install ./microsoft_webui-<version>-cp311-abi3-<platform>.whl
 Prerequisites:
 
 - Rust toolchain pinned in [`rust-toolchain.toml`](rust-toolchain.toml), with `clippy` and `rustfmt`
-- Node.js 22+ with pnpm
+- Bun 1.4.4+ (version pinned by `packageManager` in [`package.json`](package.json)); `bun install` sets up the JavaScript workspace
 
 Common commands:
 

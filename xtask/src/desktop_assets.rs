@@ -42,8 +42,8 @@ pub(crate) fn run() -> ExitCode {
 pub(crate) fn generate() -> Result<PathBuf, String> {
     let root = workspace_root()?;
     run_command_quiet(
-        "pnpm",
-        &["--filter", "@microsoft/webui-desktop", "build"],
+        "bun",
+        &["run", "--filter", "@microsoft/webui-desktop", "build"],
         None,
     )
     .map_err(|error| format!("desktop TypeScript build failed: {error}"))?;
@@ -54,7 +54,7 @@ pub(crate) fn stage_built_assets(root: &Path) -> Result<PathBuf, String> {
     let destination = root.join(GENERATED_DIRECTORY);
     let destination_arg = path_argument(&destination)?;
     run_command_quiet(
-        "node",
+        "bun",
         &[
             "packages/webui-desktop/scripts/stage-rust-assets.mjs",
             "--write",

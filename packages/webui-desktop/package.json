@@ -18,9 +18,9 @@
     "dist/"
   ],
   "scripts": {
-    "build": "tsc && node scripts/build.mjs",
-    "typecheck": "tsc --noEmit",
-    "test": "pnpm build && node scripts/stage-rust-assets.mjs --write && tsc -p tsconfig.test.json && node --test dist-test/**/*.test.js"
+    "build": "bunx --bun tsc && bun scripts/build.mjs",
+    "typecheck": "bun check",
+    "test": "bun run build && bun scripts/stage-rust-assets.mjs --write && bunx --bun tsc -p tsconfig.test.json && bun test --isolate ./dist-test"
   },
   "dependencies": {},
   "optionalDependencies": {

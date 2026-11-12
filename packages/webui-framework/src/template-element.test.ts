@@ -206,7 +206,7 @@ for (const wildcard of [false, true]) {
   });
 }
 
-test('binding arrays reserve their compiled size instead of push-grown capacity', () => {
+test('binding arrays reserve their compiled size instead of push-grown capacity', { skip: (globalThis as { Bun?: unknown }).Bun !== undefined && "Bun: JavaScriptCore does not route the framework's array allocations through a replaced globalThis.Array" }, () => {
   const originalArray = globalThis.Array;
   const commentDescriptor = Object.getOwnPropertyDescriptor(document, 'createComment');
   const allocations = new Map<object, unknown[]>();

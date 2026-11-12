@@ -30,13 +30,18 @@ pub const INTEGRATION_BUILDS: &[IntegrationBuild] = &[
         name: "node",
         commands: &[
             BuildCommand {
-                cmd: "node",
-                args: &["--check", "index.js"],
+                cmd: "bun",
+                args: &["build", "--no-bundle", "--target=bun", "index.js"],
                 cwd: Some("examples/integration/node"),
             },
             BuildCommand {
-                cmd: "node",
-                args: &["--check", "streaming-server.js"],
+                cmd: "bun",
+                args: &[
+                    "build",
+                    "--no-bundle",
+                    "--target=bun",
+                    "streaming-server.js",
+                ],
                 cwd: Some("examples/integration/node"),
             },
         ],
@@ -45,8 +50,8 @@ pub const INTEGRATION_BUILDS: &[IntegrationBuild] = &[
     IntegrationBuild {
         name: "node-addon-bench",
         commands: &[BuildCommand {
-            cmd: "node",
-            args: &["--check", "bench.mjs"],
+            cmd: "bun",
+            args: &["build", "--no-bundle", "--target=bun", "bench.mjs"],
             cwd: Some("examples/integration/node-addon-bench"),
         }],
         run_commands: &[],
@@ -55,33 +60,38 @@ pub const INTEGRATION_BUILDS: &[IntegrationBuild] = &[
         name: "lazy-ui-bench",
         commands: &[
             BuildCommand {
-                cmd: "node",
-                args: &["--check", "fixture.mjs"],
+                cmd: "bun",
+                args: &["build", "--no-bundle", "--target=bun", "fixture.mjs"],
                 cwd: Some("examples/integration/lazy-ui-bench"),
             },
             BuildCommand {
-                cmd: "node",
-                args: &["--check", "bench.mjs"],
+                cmd: "bun",
+                args: &["build", "--no-bundle", "--target=bun", "bench.mjs"],
                 cwd: Some("examples/integration/lazy-ui-bench"),
             },
             BuildCommand {
-                cmd: "node",
-                args: &["--check", "responsiveness.mjs"],
+                cmd: "bun",
+                args: &["build", "--no-bundle", "--target=bun", "responsiveness.mjs"],
                 cwd: Some("examples/integration/lazy-ui-bench"),
             },
             BuildCommand {
-                cmd: "node",
-                args: &["--check", "triggers.mjs"],
+                cmd: "bun",
+                args: &["build", "--no-bundle", "--target=bun", "triggers.mjs"],
                 cwd: Some("examples/integration/lazy-ui-bench"),
             },
             BuildCommand {
-                cmd: "node",
-                args: &["--check", "ntp.mjs"],
+                cmd: "bun",
+                args: &["build", "--no-bundle", "--target=bun", "ntp.mjs"],
                 cwd: Some("examples/integration/lazy-ui-bench"),
             },
             BuildCommand {
-                cmd: "node",
-                args: &["--test", "responsiveness.test.mjs", "ntp/serve.test.mjs"],
+                cmd: "bun",
+                args: &[
+                    "test",
+                    "--isolate",
+                    "./responsiveness.test.mjs",
+                    "./ntp/serve.test.mjs",
+                ],
                 cwd: Some("examples/integration/lazy-ui-bench"),
             },
         ],
@@ -90,7 +100,7 @@ pub const INTEGRATION_BUILDS: &[IntegrationBuild] = &[
     IntegrationBuild {
         name: "electron",
         commands: &[BuildCommand {
-            cmd: "pnpm",
+            cmd: "bun",
             args: &["run", "build"],
             cwd: Some("examples/integration/electron"),
         }],
@@ -242,8 +252,9 @@ pub fn run_example_builds() -> Result<(), String> {
 /// status quo, which ran the same shared build once per app in parallel.
 fn ensure_example_deps() -> Result<(), String> {
     run_command_quiet(
-        "pnpm",
+        "bun",
         &[
+            "run",
             "--filter",
             "@microsoft/webui",
             "--filter",
@@ -252,7 +263,6 @@ fn ensure_example_deps() -> Result<(), String> {
             "@microsoft/webui-delivery",
             "--filter",
             "@microsoft/webui-desktop",
-            "run",
             "build",
         ],
         None,
@@ -281,7 +291,7 @@ fn ensure_example_wasm() -> Result<(), String> {
 }
 
 fn run_app_build_script(app_dir: &Path) -> Result<(), String> {
-    let mut command = build_command("pnpm", &["run", "build"]);
+    let mut command = build_command("bun", &["run", "build"]);
     command
         .current_dir(app_dir)
         .env("CARGO_INCREMENTAL", "0")

@@ -474,7 +474,7 @@ fn update_package_json(path: &Path, version: &str, npm_dist_tag: &str) -> Result
     }
 
     // Replace @microsoft/webui-* version values in optionalDependencies.
-    // Skip workspace: protocol values (pnpm resolves them at publish time).
+    // Skip workspace: protocol values (bun pm pack resolves them at publish time).
     if let Some(deps) = obj.get("optionalDependencies").and_then(|v| v.as_object()) {
         for (key, val) in deps {
             if key.starts_with("@microsoft/webui") {

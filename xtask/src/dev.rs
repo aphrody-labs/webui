@@ -91,8 +91,8 @@ pub fn run(app: Option<&str>) -> ExitCode {
     if has_api {
         match process::spawn_child_prefixed(
             "api",
-            "pnpm",
-            &["start:api"],
+            "bun",
+            &["run", "start:api"],
             &app_dir,
             console::Color::Magenta,
         ) {
@@ -110,20 +110,20 @@ pub fn run(app: Option<&str>) -> ExitCode {
     //
     // esbuild only emits color when its stderr is a TTY and ignores the
     // `FORCE_COLOR`/`CLICOLOR_FORCE` env vars; under our output pipe it would
-    // print plain text. Forward esbuild's `--color=true` flag (via pnpm) when
+    // print plain text. Forward esbuild's `--color=true` flag (via bun run) when
     // we are attached to a terminal so its build errors stay colored, matching
     // the server's behavior. All example `start:client` scripts use esbuild.
     //
-    // The flag is appended WITHOUT a `--` separator: pnpm forwards extra args
+    // The flag is appended WITHOUT a `--` separator: bun run forwards extra args
     // to the example's JS build wrapper.
     let client_args: &[&str] = if console::colors_enabled_stderr() {
-        &["start:client", "--color=true"]
+        &["run", "start:client", "--color=true"]
     } else {
-        &["start:client"]
+        &["run", "start:client"]
     };
     match process::spawn_child_prefixed(
         "client",
-        "pnpm",
+        "bun",
         client_args,
         &app_dir,
         console::Color::Green,
@@ -154,8 +154,8 @@ pub fn run(app: Option<&str>) -> ExitCode {
     // Start WebUI server only after the first client manifest is complete.
     match process::spawn_child_prefixed(
         "server",
-        "pnpm",
-        &["start:server"],
+        "bun",
+        &["run", "start:server"],
         &app_dir,
         console::Color::Cyan,
     ) {

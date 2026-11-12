@@ -289,10 +289,10 @@ cargo xtask bench streaming-browser
 
 # Or directly:
 cd examples/integration/streaming-browser-bench
-pnpm test              # transport bench
-pnpm test:hydration    # progressive hydration matrix
-pnpm test:lazy-hydration # component lazy hydration matrix
-pnpm typecheck         # tsc --noEmit for this package
+bun run test              # transport bench
+bun run test:hydration    # progressive hydration matrix
+bun run test:lazy-hydration # component lazy hydration matrix
+bun run typecheck         # tsc --noEmit for this package
 ```
 
 ## Before/after comparison
@@ -312,16 +312,16 @@ compare phase prints a Δ%-table for TTFB, FCP, LCP, and load.
 
 (Underneath, this maps to env vars `WEBUI_BENCH_SAVE` and
 `WEBUI_BENCH_COMPARE` consumed by the spec; you can also set them
-directly when running `pnpm test`.)
+directly when running `bun run test`.)
 
 The hydration matrix reuses the same env vars but writes a **distinct** file so
 the two benches never clobber each other:
 
 ```bash
-WEBUI_BENCH_SAVE=before    pnpm test:hydration
-WEBUI_BENCH_COMPARE=before pnpm test:hydration
+WEBUI_BENCH_SAVE=before    bun run test:hydration
+WEBUI_BENCH_COMPARE=before bun run test:hydration
 # Compare only fails the run when the strict flag is also set:
-WEBUI_STREAMING_HYDRATION_ENFORCE=1 WEBUI_BENCH_COMPARE=before pnpm test:hydration
+WEBUI_STREAMING_HYDRATION_ENFORCE=1 WEBUI_BENCH_COMPARE=before bun run test:hydration
 ```
 
 Hydration snapshots live at
@@ -341,13 +341,13 @@ WEBUI_LAZY_HYDRATION_MODES=eager,lazy-hydrate,lazy-render \
 WEBUI_LAZY_HYDRATION_RUNS=30 \
 WEBUI_LAZY_HYDRATION_TRACE_RUNS=5 \
 WEBUI_LAZY_HYDRATION_SAVE=before \
-pnpm test:lazy-hydration
+bun run test:lazy-hydration
 
 WEBUI_LAZY_HYDRATION_RUNS=30 \
 WEBUI_LAZY_HYDRATION_TRACE_RUNS=5 \
 WEBUI_LAZY_HYDRATION_COMPARE=before \
 WEBUI_LAZY_HYDRATION_SAVE=after \
-pnpm test:lazy-hydration
+bun run test:lazy-hydration
 ```
 
 Snapshots live at
@@ -384,7 +384,7 @@ example benches in `crates/webui/`:
 - measurements come from JavaScript, not Rust
 
 Keeping it as a workspace member lets `cargo build` validate the
-server compiles, while the actual run lives behind `pnpm test` (or
+server compiles, while the actual run lives behind `bun run test` (or
 `cargo xtask bench streaming-browser`).
 
 ## Treat as signal vs noise

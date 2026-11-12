@@ -93,7 +93,7 @@ refreshes the generated reference; ordinary builds do not write it.
 ## Validation
 
 ```bash
-cd docs && pnpm build
+cd docs && bun run build
 ```
 
 This catches broken links, VitePress syntax errors (unescaped `{{` outside code blocks), and missing pages. Run it when docs are changed.

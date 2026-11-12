@@ -1,14 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { build } from 'esbuild';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
 
 const [mode, requestedDestination] = process.argv.slice(2);
 if (mode !== '--write' && mode !== '--check') {
-  throw new Error('Usage: node scripts/stage-rust-assets.mjs --write|--check [DESTINATION]');
+  throw new Error('Usage: bun scripts/stage-rust-assets.mjs --write|--check [DESTINATION]');
 }
 
 const root = fileURLToPath(new URL('../', import.meta.url));
@@ -30,19 +29,15 @@ for (const [entry, output] of [
   ['linux-local-entry.ts', 'linux-local-entry.js'],
   ['linux-local-mediator.ts', 'linux-local-mediator.js'],
 ]) {
-  const result = await build({
-    entryPoints: [resolve(root, 'src', entry)],
-    bundle: true,
-    platform: 'browser',
+  const result = await Bun.build({
+    entrypoints: [resolve(root, 'src', entry)],
+    target: 'browser',
     format: 'iife',
-    target: 'es2022',
     minify: true,
-    legalComments: 'none',
-    charset: 'utf8',
-    write: false,
-    banner: { js: '// Copyright (c) Microsoft Corporation.\n// Licensed under the MIT license.\n' },
+    banner: '// Copyright (c) Microsoft Corporation.\n// Licensed under the MIT license.',
   });
-  const bytes = result.outputFiles[0]?.contents;
+  const artifact = result.outputs[0];
+  const bytes = artifact && new Uint8Array(await artifact.arrayBuffer());
   if (!bytes) throw new Error(`Missing generated Rust asset: ${entry}`);
   assets.set(output, bytes);
 }

@@ -23,24 +23,19 @@ RUN apt-get update && \
         curl \
         gnupg \
         protobuf-compiler && \
-    install -d -m 0755 /etc/apt/keyrings && \
-    curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | \
-        gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg && \
-    chmod 0644 /etc/apt/keyrings/nodesource.gpg && \
-    echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_22.x nodistro main" \
-        > /etc/apt/sources.list.d/nodesource.list && \
-    apt-get update && \
-    apt-get install -y --no-install-recommends nodejs && \
-    corepack enable && \
     rm -rf /var/lib/apt/lists/*
+
+# Bun is the JavaScript runtime and package manager (package.json packageManager).
+COPY --from=oven/bun:1.4.4-debian /usr/local/bin/bun /usr/local/bin/bun
+RUN ln -s /usr/local/bin/bun /usr/local/bin/bunx
 
 COPY --from=planner /build/recipe.json recipe.json
 RUN cargo chef cook --release --bin marketplace-api --recipe-path recipe.json
 
 COPY . .
-RUN pnpm install --frozen-lockfile --filter=commerce... && \
-    pnpm --filter=@microsoft/webui-framework --filter=@microsoft/webui-delivery run build && \
-    cd examples/app/commerce && pnpm build
+RUN bun install --frozen-lockfile --filter='commerce...' && \
+    bun run --filter=@microsoft/webui-framework --filter=@microsoft/webui-delivery build && \
+    cd examples/app/commerce && bun run build
 
 RUN cargo build --release -p marketplace-api
 

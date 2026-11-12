@@ -26,7 +26,7 @@ use crate::util;
 
 /// Maximum time to wait for a server port to become ready.
 /// CI environments are slower, but local runs also need slack: when 8+
-/// `pnpm start:server` processes spawn concurrently, each runs `cargo run`,
+/// `bun run start:server` processes spawn concurrently, each runs `cargo run`,
 /// and even with prebuilt artifacts cargo briefly checks the workspace
 /// graph under a shared filesystem lock — easily exceeding the few seconds
 /// of actual server startup.
@@ -45,7 +45,7 @@ struct PlaywrightSuite {
     ports: &'static [u16],
     scripts: &'static [&'static str],
     build_client: bool,
-    /// Optional pnpm script to run before starting servers (e.g. "build:e2e").
+    /// Optional package script to run before starting servers (e.g. "build:e2e").
     pre_script: Option<&'static str>,
     test_script: &'static str,
     update_snapshots_script: &'static str,
@@ -244,7 +244,7 @@ pub fn run(args: &[String]) -> ExitCode {
         "\n{} Building workspace packages...",
         console::style("▸").cyan().bold(),
     );
-    match util::run_command_quiet("pnpm", &["build"], None) {
+    match util::run_command_quiet("bun", &["run", "build"], None) {
         Ok(()) => eprintln!("  {}", console::style("✔ all packages").green()),
         Err(msg) => {
             eprintln!(
@@ -260,7 +260,7 @@ pub fn run(args: &[String]) -> ExitCode {
     // load at runtime. Without this:
     // - Framework e2e tests load a stale libwebui_node dylib and produce
     //   mismatched SSR output (release profile, loaded by the Node addon).
-    // - Example `pnpm start:server` scripts compile webui-cli on the critical
+    // - Example `bun run start:server` scripts compile webui-cli on the critical
     //   path via `cargo run` and overflow the port-readiness timeout (debug
     //   profile, used by `cargo run` defaults).
     eprintln!(
@@ -310,7 +310,7 @@ pub fn run(args: &[String]) -> ExitCode {
         // Use each app's declared client build. WebUI examples run esbuild's
         // JS API with esbuildProjection(), so bypassing the script would
         // overwrite bundle bytes without updating the manifest.
-        match util::run_command_quiet("pnpm", &["build:client"], Some(&dir)) {
+        match util::run_command_quiet("bun", &["run", "build:client"], Some(&dir)) {
             Ok(()) => {
                 eprintln!("  {} {}", console::style("✔").green(), suite.name);
             }
@@ -330,7 +330,7 @@ pub fn run(args: &[String]) -> ExitCode {
     for suite in &suites {
         if let Some(script) = suite.pre_script {
             let dir = PathBuf::from(suite.dir);
-            match util::run_command_quiet("pnpm", &[script], Some(&dir)) {
+            match util::run_command_quiet("bun", &["run", script], Some(&dir)) {
                 Ok(()) => {
                     eprintln!(
                         "  {} {} ({})",
@@ -383,8 +383,8 @@ pub fn run(args: &[String]) -> ExitCode {
             );
             match process::spawn_child_quiet(
                 &format!("{}/{}", suite.name, script),
-                "pnpm",
-                &[script],
+                "bun",
+                &["run", script],
                 &dir,
             ) {
                 Some(child) => servers.push(child),
@@ -554,14 +554,14 @@ pub fn run(args: &[String]) -> ExitCode {
 }
 
 fn run_test(name: &str, dir: &Path, script: &str) -> (bool, String) {
-    let mut cmd = util::build_command("pnpm", &[script]);
+    let mut cmd = util::build_command("bun", &["run", script]);
     cmd.current_dir(dir)
         .stdout(Stdio::piped())
         .stderr(Stdio::piped());
 
     let child = match cmd.spawn() {
         Ok(c) => c,
-        Err(e) => return (false, format!("Failed to spawn pnpm test: {e}")),
+        Err(e) => return (false, format!("Failed to spawn bun test: {e}")),
     };
 
     match child.wait_with_output() {

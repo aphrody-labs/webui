@@ -13,13 +13,13 @@ cargo build -p microsoft-webui-node --release
 2. Build the `@microsoft/webui` package:
 
 ```bash
-pnpm --filter @microsoft/webui build
+bun run --filter @microsoft/webui build
 ```
 
 3. Install workspace dependencies:
 
 ```bash
-pnpm install
+bun install
 ```
 
 4. Build a WebUI app (e.g. contact-book-manager):
@@ -33,7 +33,7 @@ esbuild ../../app/contact-book-manager/src/index.ts --bundle --outfile=../../app
 
 ```bash
 # contact-book-manager (WebUI Framework)
-pnpm start ../../app/contact-book-manager/dist ../../app/contact-book-manager/data/state.json --plugin=webui
+bun run start ../../app/contact-book-manager/dist ../../app/contact-book-manager/data/state.json --plugin=webui
 ```
 
 ## CLI Arguments

@@ -33,15 +33,15 @@
   "license": "MIT",
   "name": "@microsoft/webui-delivery",
   "scripts": {
-    "build": "tsc",
-    "prepack": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\" && tsc --incremental false",
-    "build:e2e": "esbuild tests/fixtures/router-app/src/index.ts tests/fixtures/router-app/src/interaction-entry.ts --bundle --outdir=tests/fixtures/router-app/dist --format=esm --splitting --sourcemap --tsconfig=tsconfig.e2e.json && esbuild tests/fixtures/router-app/src/lean-entry.ts --bundle --outfile=tests/fixtures/router-app/dist/lean-entry.js --format=esm --sourcemap --tsconfig=tsconfig.e2e.json",
+    "build": "bunx --bun tsc",
+    "prepack": "bun -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\" && bunx --bun tsc --incremental false",
+    "build:e2e": "bun build tests/fixtures/router-app/src/index.ts tests/fixtures/router-app/src/interaction-entry.ts --outdir=tests/fixtures/router-app/dist --format=esm --splitting --sourcemap=linked --tsconfig-override=tsconfig.e2e.json && bun build tests/fixtures/router-app/src/lean-entry.ts --outfile=tests/fixtures/router-app/dist/lean-entry.js --format=esm --sourcemap=linked --tsconfig-override=tsconfig.e2e.json",
     "start:server": "cargo run -p microsoft-webui-cli -- serve ./tests/fixtures/router-app/src --plugin=webui --servedir ./tests/fixtures/router-app/dist --state ./tests/fixtures/router-app/data/state.json --port 39102",
-    "test:unit": "tsc -p tsconfig.unit-test.json --incremental false && node --test \"dist-test/**/*.test.js\"",
-    "test": "pnpm test:unit && pnpm build:e2e && playwright test",
-    "test:e2e": "playwright test",
-    "test:update-snapshots": "playwright test --update-snapshots",
-    "typecheck": "tsc --noEmit"
+    "test:unit": "bunx --bun tsc -p tsconfig.unit-test.json --incremental false && bun test --isolate ./dist-test",
+    "test": "bun run test:unit && bun run build:e2e && bunx --bun playwright test",
+    "test:e2e": "bunx --bun playwright test",
+    "test:update-snapshots": "bunx --bun playwright test --update-snapshots",
+    "typecheck": "bun check"
   },
   "type": "module",
   "publishConfig": {

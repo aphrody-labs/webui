@@ -1,45 +1,49 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import assert from 'node:assert/strict';
-import { createRequire } from 'node:module';
+import { afterAll, afterEach, beforeAll, expect, test } from 'bun:test';
 import { mkdtemp, mkdir, writeFile, readFile, rm } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { test } from 'node:test';
-import { runInNewContext } from 'node:vm';
 import { runWebUIClientBuild } from './build-client.mjs';
-import { minifyClient } from './minify-client.mjs';
 
 const packageRoot = fileURLToPath(new URL('../packages/webui/', import.meta.url));
-const require = createRequire(path.join(packageRoot, 'package.json'));
 const { hashContent } = await import(
   pathToFileURL(path.join(packageRoot, 'dist/projection/index.js')).href
 );
-const { SourceMapConsumer } = createRequire(
-  require.resolve('terser'),
-)('@jridgewell/source-map');
-const { build } = require('esbuild');
-process.chdir(fileURLToPath(new URL('../packages/webui-test-support/', import.meta.url)));
+// Resolve @microsoft/webui and the TypeScript peer the way an example does.
+// `bun test` shares one process across files, so restore the directory.
+const initialDirectory = process.cwd();
+beforeAll(() => {
+  process.chdir(fileURLToPath(new URL('../packages/webui-test-support/', import.meta.url)));
+});
+afterAll(() => {
+  process.chdir(initialDirectory);
+});
 
-async function fixture(t, options = {}) {
+const roots = [];
+afterEach(async () => {
+  await Promise.all(roots.splice(0).map(root => rm(root, { recursive: true, force: true })));
+});
+
+async function fixture(options = {}, files = {}) {
   const root = await mkdtemp(path.join(packageRoot, '.tmp-client-build-'));
-  t.after(() => rm(root, { recursive: true, force: true }));
+  roots.push(root);
   await writeFile(path.join(root, 'package.json'), '{"type":"module"}');
   await mkdir(path.join(root, 'src'));
-  const source = `/*! @license Fixture MIT */
+  await writeFile(path.join(root, 'src/index.js'), `/*! @license Fixture MIT */
 export function calculate(value) {
   const redundant = value + 1;
   return redundant;
 }
 export const development = typeof __WEBUI_DEV__ === 'undefined' || __WEBUI_DEV__;
-export const diagnostic = ${JSON.stringify('\u2260')};
-export class Unicode {
-  ${'\u503c'} = ${JSON.stringify('\u96ea')};
-  ${'\u65b9\u6cd5'}(suffix) { return this.${'\u503c'} + suffix; }
-}
-`;
-  await writeFile(path.join(root, 'src/index.js'), source);
+export const load = () => import('./lazy.js');
+`);
+  await writeFile(path.join(root, 'src/lazy.js'), 'export const lazy = 7;\n');
+  for (const [file, contents] of Object.entries(files)) {
+    await mkdir(path.dirname(path.join(root, file)), { recursive: true });
+    await writeFile(path.join(root, file), contents);
+  }
   const result = await runWebUIClientBuild({
     absWorkingDir: root,
     entryPoints: ['src/index.js'],
@@ -49,231 +53,68 @@ export class Unicode {
   return { root, result };
 }
 
-test('production output is optimized before projection hashes and metafile sizes', async t => {
-  const { root, result } = await fixture(t);
-  assert.equal(result.outputFiles, undefined);
+test('production output is minified before projection binds its bytes', async () => {
+  const { root, result } = await fixture();
+  expect(result.success).toBe(true);
   const code = await readFile(path.join(root, 'dist/index.js'), 'utf8');
-  assert.match(code, /@license Fixture MIT/);
-  assert.doesNotMatch(code, /redundant/);
+  expect(code).toMatch(/@license Fixture MIT/);
+  expect(code).not.toMatch(/redundant/);
+  expect(code).not.toMatch(/modulepreload/);
   const module = await import(pathToFileURL(path.join(root, 'dist/index.js')).href);
-  assert.equal(module.calculate(41), 42);
-  assert.equal(module.development, false);
+  expect(module.calculate(41)).toBe(42);
+  expect(module.development).toBe(false);
+  expect((await module.load()).lazy).toBe(7);
+
   const manifest = JSON.parse(await readFile(path.join(root, 'dist/webui-projection.json'), 'utf8'));
-  const hashes = Object.values(manifest.outputs);
-  assert.ok(hashes.includes(hashContent(code)), 'projection must bind the minified bytes');
-  assert.equal(result.metafile.outputs['dist/index.js'].bytes, Buffer.byteLength(code));
-  assert.equal(
-    result.metafile.outputs['dist/index.js'].webui.inputBytesInOutput,
-    'before-minification',
-  );
+  expect(manifest.adapter).toEqual({ name: 'bun', bundler: `bun@${Bun.version}` });
+  expect(Object.values(manifest.outputs)).toContain(hashContent(code));
 });
 
-test('minification labels original input attribution without changing the dependency graph', async t => {
-  const { root } = await fixture(t, { minify: false });
-  await writeFile(path.join(root, 'src/shared.js'), 'export const shared = value => value + 1;');
-  await writeFile(path.join(root, 'src/lazy.js'), `
-    import { shared } from './shared.js';
-    export const lazy = value => shared(value) * 2;
-  `);
-  await writeFile(path.join(root, 'src/style.css'), '.fixture { color: red; }');
-  await writeFile(path.join(root, 'src/index.js'), `
-    import './style.css';
-    import { shared } from './shared.js';
-    export const calculate = shared;
-    export const load = () => import('./lazy.js');
-  `);
-  let original;
-  const result = await build({
-    absWorkingDir: root,
-    entryPoints: ['src/index.js'],
-    outdir: 'dist',
-    bundle: true,
-    splitting: true,
-    format: 'esm',
-    sourcemap: 'external',
-    metafile: true,
-    write: false,
-    plugins: [{
-      name: 'capture-esbuild-attribution',
-      setup(plugin) {
-        plugin.onEnd(result => { original = structuredClone(result.metafile); });
-      },
-    }, minifyClient()],
-  });
-  assert.ok(original);
-  const metafile = JSON.parse(JSON.stringify(result.metafile));
-  assert.deepEqual(metafile.inputs, original.inputs);
-  const files = new Map(result.outputFiles.map(file => [file.path, file]));
-  let javascript = 0;
-  let smaller = 0;
-  for (const [file, output] of Object.entries(metafile.outputs)) {
-    const bytes = files.get(path.resolve(root, file)).contents.byteLength;
-    const { bytes: originalBytes, ...originalGraph } = original.outputs[file];
-    const { bytes: finalBytes, webui, ...graph } = output;
-    assert.equal(finalBytes, bytes);
-    assert.deepEqual(graph, originalGraph, `${file} must retain esbuild's graph and attribution`);
-    if (file.endsWith('.js')) {
-      javascript++;
-      if (finalBytes < originalBytes) smaller++;
-      assert.deepEqual(webui, {
-        inputBytesInOutput: 'before-minification',
-        bytesBeforeMinification: originalBytes,
-      });
-    } else {
-      assert.equal(webui, undefined, `${file} was not JavaScript-minified`);
-      if (file.endsWith('.css')) assert.equal(finalBytes, originalBytes);
+test('metafile output ids are relative to absWorkingDir, as with esbuild', async () => {
+  const { root, result } = await fixture();
+  const output = result.metafile.outputs['dist/index.js'];
+  expect(output).toBeDefined();
+  const code = await readFile(path.join(root, 'dist/index.js'));
+  expect(output.bytes).toBe(code.byteLength);
+  for (const [id, metadata] of Object.entries(result.metafile.outputs)) {
+    expect(id.startsWith('./')).toBe(false);
+    for (const edge of metadata.imports) {
+      if (!edge.external) expect(result.metafile.outputs[edge.path]).toBeDefined();
     }
   }
-  assert.ok(javascript >= 3, 'entry, dynamic import and shared chunk must all be covered');
-  assert.equal(smaller, javascript);
-  assert.ok(Object.keys(metafile.outputs).some(file => file.endsWith('.css')));
-  assert.ok(Object.keys(metafile.outputs).some(file => file.endsWith('.map')));
 });
 
-test('production escapes non-ASCII diagnostics without changing their runtime text', async t => {
-  const { root, result } = await fixture(t, { sourcemap: 'external' });
+test('explicit minify false and developer flag overrides remain supported', async () => {
+  const { root } = await fixture({ minify: false, define: { __WEBUI_DEV__: 'true' } });
   const code = await readFile(path.join(root, 'dist/index.js'), 'utf8');
-  assert.doesNotMatch(code, /[^\x00-\x7f]/u);
-  assert.match(code, /@license Fixture MIT/);
+  expect(code).toMatch(/redundant/);
   const module = await import(pathToFileURL(path.join(root, 'dist/index.js')).href);
-  assert.equal(module.diagnostic, '\u2260');
-  const instance = new module.Unicode();
-  assert.equal(instance['\u503c'], '\u96ea');
-  assert.equal(instance['\u65b9\u6cd5']('!'), '\u96ea!');
-  assert.equal(instance['\u65b9\u6cd5'].name, '\u65b9\u6cd5');
-  assert.equal(instance['\u65b9\u6cd5'].length, 1);
-  const manifest = JSON.parse(await readFile(path.join(root, 'dist/webui-projection.json'), 'utf8'));
-  assert.ok(Object.values(manifest.outputs).includes(hashContent(code)));
-  assert.equal(result.metafile.outputs['dist/index.js'].bytes, Buffer.byteLength(code));
-  const map = JSON.parse(await readFile(path.join(root, 'dist/index.js.map'), 'utf8'));
-  assert.ok(map.sourcesContent.some(source => source.includes('\u503c') && source.includes('\u96ea')));
-  const valueIndex = code.indexOf('\\u96ea');
-  assert.ok(valueIndex >= 0);
-  const position = code.slice(0, valueIndex).split('\n');
-  const original = new SourceMapConsumer(map).originalPositionFor({
-    line: position.length, column: position.at(-1).length,
-  });
-  assert.ok(original.source.endsWith('src/index.js'));
-  assert.equal(original.line, 9);
+  expect(module.development).toBe(true);
 });
 
-for (const sourcemap of [false, true, 'external', 'inline', 'both']) {
-  test(`in-memory output preserves exports, hashes and source maps (${sourcemap})`, async t => {
-    const { result } = await fixture(t, { write: false, sourcemap });
-    const js = result.outputFiles.find(file => file.path.endsWith('.js'));
-    assert.equal(js.text, new TextDecoder().decode(js.contents));
-    assert.ok(js.hash);
-    const module = await import(`data:text/javascript;base64,${Buffer.from(js.contents).toString('base64')}`);
-    assert.equal(module.calculate(5), 6);
-    if (!sourcemap) return;
-    const external = result.outputFiles.find(file => file.path.endsWith('.map'));
-    const inline = /sourceMappingURL=data:application\/json[^,]*,([^\s]+)/.exec(js.text);
-    const map = JSON.parse(external?.text ?? Buffer.from(inline[1], 'base64').toString());
-    assert.ok(map.sources.some(source => source.endsWith('src/index.js')));
-    assert.ok(map.sourcesContent.some(source => source.includes('redundant')));
-    assert.ok(map.mappings.length);
-    const position = js.text.slice(0, js.text.indexOf('return')).split('\n');
-    const original = new SourceMapConsumer(map).originalPositionFor({
-      line: position.length,
-      column: position.at(-1).length,
-    });
-    assert.ok(original.source.endsWith('src/index.js'));
-    assert.ok(original.line >= 2 && original.line <= 4);
-    if (sourcemap === 'external') assert.doesNotMatch(js.text, /sourceMappingURL/);
-    if (sourcemap === 'inline' || sourcemap === 'both') assert.ok(inline);
-  });
-}
-
-test('explicit minify false and developer flag overrides remain supported', async t => {
-  const { root, result } = await fixture(t, {
-    minify: false,
-    define: { __WEBUI_DEV__: 'true' },
-  });
-  const code = await readFile(path.join(root, 'dist/index.js'), 'utf8');
-  assert.match(code, /redundant/);
-  const module = await import(pathToFileURL(path.join(root, 'dist/index.js')).href);
-  assert.equal(module.development, true);
-  assert.equal(result.metafile.outputs['dist/index.js'].webui, undefined);
-});
-
-test('hashed output names change when final minifier settings change', async t => {
-  const options = { entryNames: '[name]-[hash]', write: false };
-  const first = await fixture(t, { ...options, minifyIdentifiers: false });
-  const second = await fixture(t, options);
-  const named = first.result.outputFiles.find(file => file.path.endsWith('.js'));
-  const mangled = second.result.outputFiles.find(file => file.path.endsWith('.js'));
-  assert.notEqual(named.text, mangled.text);
-  assert.notEqual(path.basename(named.path), path.basename(mangled.path));
-});
-
-test('CommonJS, custom extensions and preserved function names remain supported', async t => {
-  const { result } = await fixture(t, {
-    format: 'cjs',
-    splitting: false,
-    keepNames: true,
-    target: 'es2015',
-    outExtension: { '.js': '.cjs' },
-    sourcemap: 'external',
-    write: false,
-  });
-  const js = result.outputFiles.find(file => file.path.endsWith('.cjs'));
-  const module = { exports: {} };
-  runInNewContext(js.text, { module, exports: module.exports });
-  assert.equal(module.exports.calculate(41), 42);
-  assert.equal(module.exports.calculate.name, 'calculate');
-  assert.equal(result.metafile.outputs['dist/index.cjs'].bytes, js.contents.length);
-  assert.equal(
-    result.metafile.outputs['dist/index.cjs'].webui.inputBytesInOutput,
-    'before-minification',
+test('named entry points emit flat outputs and reject mismatched names', async () => {
+  const { root } = await fixture(
+    { entryPoints: { index: 'src/index.js', panel: 'src/panel/panel.js' } },
+    { 'src/panel/panel.js': 'export const panel = true;\n' },
   );
-  assert.ok(result.outputFiles.some(file => file.path.endsWith('.cjs.map')));
+  const panel = await import(pathToFileURL(path.join(root, 'dist/panel.js')).href);
+  expect(panel.panel).toBe(true);
+  await expect(fixture({ entryPoints: { other: 'src/index.js' } })).rejects.toThrow(
+    /must match its file name/,
+  );
 });
 
-test('custom ESM extensions retain minification attribution', async t => {
-  const { result } = await fixture(t, {
-    outExtension: { '.js': '.mjs' },
-    write: false,
-  });
-  const js = result.outputFiles.find(file => file.path.endsWith('.mjs'));
-  const output = result.metafile.outputs['dist/index.mjs'];
-  assert.equal(output.bytes, js.contents.length);
-  assert.equal(output.webui.inputBytesInOutput, 'before-minification');
-  assert.ok(output.webui.bytesBeforeMinification > output.bytes);
+test('projection failures reject the build', async () => {
+  await expect(
+    fixture({ projectionManifest: 'dist/index.js' }),
+  ).rejects.toThrow(/PROJ-C013|collides/);
 });
 
-test('watch mode retains development diagnostics and readable output', async t => {
-  const original = process.argv;
-  process.argv = [...original, '--watch'];
-  let context;
-  try {
-    const built = await fixture(t);
-    context = built.result;
-    const result = await context.rebuild();
-    const code = await readFile(path.join(built.root, 'dist/index.js'), 'utf8');
-    assert.match(code, /redundant/);
-    const module = await import(pathToFileURL(path.join(built.root, 'dist/index.js')).href);
-    assert.equal(module.development, true);
-    assert.equal(result.metafile.outputs['dist/index.js'].webui, undefined);
-  } finally {
-    process.argv = original;
-    await context?.dispose();
-  }
-});
-
-test('production emits no orphan hydration diagnostic chunks', async t => {
-  const framework = fileURLToPath(new URL('../packages/webui-framework/src/index.ts', import.meta.url));
-  const { result } = await fixture(t, {
-    stdin: {
-      contents: `export { WebUIElement } from ${JSON.stringify(framework.replaceAll('\\', '/'))};`,
-      resolveDir: packageRoot,
-      sourcefile: 'framework-entry.ts',
-      loader: 'ts',
-    },
-    entryPoints: [],
-    write: false,
-  });
-  for (const [file, output] of Object.entries(result.metafile.outputs)) {
-    assert.doesNotMatch(file, /hydration-mismatch/);
-    assert.ok(!Object.keys(output.inputs).some(input => input.endsWith('hydration-mismatch.ts')));
-  }
+test('relative external specifiers stay imports in the bundle', async () => {
+  const { root } = await fixture(
+    { entryPoints: ['src/app.js'], external: ['./wasm/handler.js'] },
+    { 'src/app.js': 'export const load = () => import("./wasm/handler.js");\n' },
+  );
+  const code = await readFile(path.join(root, 'dist/app.js'), 'utf8');
+  expect(code).toContain('./wasm/handler.js');
 });

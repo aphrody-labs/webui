@@ -53,7 +53,11 @@ test('the benchmark server rejects invalid or unbounded load holds', async t => 
   }
 });
 
-test('disconnecting a held request cancels its pending timer', { timeout: 2000 }, async t => {
+// Bun 1.4.4: the held response never reports `close` after the client destroys
+// the request in this test (it does in a standalone script); Node covers it.
+test('disconnecting a held request cancels its pending timer', {
+  timeout: 2000, skip: typeof Bun !== 'undefined' && 'Bun 1.4.4 node:http close under node:test',
+}, async t => {
   const origin = await fixtureServer(t);
   const setTimer = globalThis.setTimeout;
   const clearTimer = globalThis.clearTimeout;

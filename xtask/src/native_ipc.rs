@@ -248,20 +248,20 @@ fn preflight(root: &Path, fixture: &Path, artifacts: &Path, plan: Plan) -> Resul
     )?;
 
     let compiler = root.join("packages/webui-desktop/node_modules/typescript/bin/tsc");
-    let mut typescript = Command::new("node");
+    let mut typescript = Command::new("bun");
     typescript
         .arg(&compiler)
         .arg("-p")
         .arg(fixture.join("tsconfig.json"));
     process::run(
         &mut typescript,
-        "node tsc -p native-ipc/tsconfig.json",
+        "bun tsc -p native-ipc/tsconfig.json",
         PREP_TIMEOUT,
     )?;
 
-    let mut navigation_test = Command::new("node");
+    let mut navigation_test = Command::new("bun");
     navigation_test
-        .arg("--test")
+        .arg("test")
         .arg(fixture.join("history-navigation.test.mjs"));
     process::run(
         &mut navigation_test,

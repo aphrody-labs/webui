@@ -5,19 +5,19 @@
   "private": true,
   "webuiProjectionManifest": "./dist/webui-projection.json",
   "scripts": {
-    "build": "pnpm run build:deps && pnpm run build:client && pnpm run build:server",
-    "build:deps": "pnpm --filter @microsoft/webui --filter @microsoft/webui-framework run build",
-    "build:client": "node ./build-client.mjs",
-    "build:server": "tsc -p server/tsconfig.json && esbuild server/src/index.ts --bundle --platform=node --format=esm --outfile=server/dist/index.js",
-    "start:client": "pnpm run build:deps && node ./build-client.mjs --watch",
-    "start:api": "tsx watch server/src/index.ts --port 3030",
-    "start:test-api": "tsx server/src/index.ts --port 3030 --test-controls --max-concurrent-streams 16",
+    "build": "bun run build:deps && bun run build:client && bun run build:server",
+    "build:deps": "bun run --filter @microsoft/webui --filter @microsoft/webui-framework build",
+    "build:client": "bun ./build-client.mjs",
+    "build:server": "bun check -p server/tsconfig.json && bun build server/src/index.ts --target=node --format=esm --outfile=server/dist/index.js",
+    "start:client": "bun run build:deps && bun ./build-client.mjs --watch",
+    "start:api": "bun --watch server/src/index.ts --port 3030",
+    "start:test-api": "bun server/src/index.ts --port 3030 --test-controls --max-concurrent-streams 16",
     "start:server": "cargo run -p microsoft-webui-cli -- serve ./src --theme=@microsoft/webui-examples-theme --plugin=webui --projection-manifest ./dist/webui-projection.json --servedir ./dist --css style --port 3020 --api-port 3030 --watch",
     "start:test-server": "cargo run -p microsoft-webui-cli -- serve ./src --theme=@microsoft/webui-examples-theme --plugin=webui --projection-manifest ./dist/webui-projection.json --servedir ./dist --css style --port 3020 --api-port 3030",
     "start": "cargo xtask dev streaming",
-    "test": "pnpm run test:server && playwright test",
-    "test:server": "tsx --test server/src/*.test.ts",
-    "test:update-snapshots": "playwright test --update-snapshots"
+    "test": "bun run test:server && bunx --bun playwright test",
+    "test:server": "bun test --isolate ./server/src",
+    "test:update-snapshots": "bunx --bun playwright test --update-snapshots"
   },
   "devDependencies": {
     "@microsoft/webui": "workspace:*",
@@ -27,7 +27,6 @@
     "@types/node": "catalog:",
     "esbuild": "catalog:",
     "tslib": "catalog:",
-    "tsx": "^4.23.13",
     "typescript": "catalog:"
   }
 }

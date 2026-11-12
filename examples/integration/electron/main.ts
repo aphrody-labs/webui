@@ -6,8 +6,8 @@
 //
 // Prerequisites:
 //   1. Build the native addon: cargo build -p microsoft-webui-node --release
-//   2. Build the @microsoft/webui package: pnpm --filter @microsoft/webui build
-//   3. Install workspace dependencies: pnpm install
+//   2. Build the @microsoft/webui package: bun run --filter @microsoft/webui build
+//   3. Install workspace dependencies: bun install
 //   4. Build a WebUI app:
 //      cargo run -p microsoft-webui-cli -- build <app>/src --out <app>/dist --css link --plugin=webui
 //      esbuild <app>/src/index.ts --bundle --outfile=<app>/dist/index.js --format=esm

@@ -543,8 +543,8 @@ fn bench_browser(save: Option<String>, compare: Option<String>) -> ExitCode {
         eprintln!("streaming-browser bench: {} not found", bench_dir.display());
         return ExitCode::FAILURE;
     }
-    let mut cmd = Command::new("pnpm");
-    cmd.arg("test").current_dir(&bench_dir);
+    let mut cmd = Command::new("bun");
+    cmd.args(["run", "test"]).current_dir(&bench_dir);
     if let Some(name) = save.as_ref() {
         cmd.env("WEBUI_BENCH_SAVE", name);
     }
@@ -558,7 +558,7 @@ fn bench_browser(save: Option<String>, compare: Option<String>) -> ExitCode {
             ExitCode::FAILURE
         }
         Err(e) => {
-            eprintln!("streaming-browser bench: failed to spawn pnpm: {e}");
+            eprintln!("streaming-browser bench: failed to spawn bun: {e}");
             ExitCode::FAILURE
         }
     }
@@ -573,8 +573,9 @@ fn bench_lazy_hydration(save: Option<String>, compare: Option<String>) -> ExitCo
         eprintln!("lazy-hydration bench: {} not found", bench_dir.display());
         return ExitCode::FAILURE;
     }
-    let mut cmd = Command::new("pnpm");
-    cmd.arg("test:lazy-hydration").current_dir(&bench_dir);
+    let mut cmd = Command::new("bun");
+    cmd.args(["run", "test:lazy-hydration"])
+        .current_dir(&bench_dir);
     if let Some(name) = save.as_ref() {
         cmd.env("WEBUI_LAZY_HYDRATION_SAVE", name);
     }
@@ -588,7 +589,7 @@ fn bench_lazy_hydration(save: Option<String>, compare: Option<String>) -> ExitCo
             ExitCode::FAILURE
         }
         Err(error) => {
-            eprintln!("lazy-hydration bench: failed to spawn pnpm: {error}");
+            eprintln!("lazy-hydration bench: failed to spawn bun: {error}");
             ExitCode::FAILURE
         }
     }
@@ -625,7 +626,11 @@ fn bench_node_addon(save: Option<String>, compare: Option<String>) -> ExitCode {
         "  {} building @microsoft/webui package",
         console::style("•").dim()
     );
-    if let Err(message) = run_command("pnpm", &["--filter", "@microsoft/webui", "build"], None) {
+    if let Err(message) = run_command(
+        "bun",
+        &["run", "--filter", "@microsoft/webui", "build"],
+        None,
+    ) {
         eprintln!("node-addon bench: package build failed: {message}");
         return ExitCode::FAILURE;
     }
@@ -652,7 +657,7 @@ fn bench_node_addon(save: Option<String>, compare: Option<String>) -> ExitCode {
         return ExitCode::FAILURE;
     }
 
-    let mut cmd = build_command("pnpm", &["run", "bench"]);
+    let mut cmd = build_command("bun", &["run", "bench"]);
     cmd.current_dir(&bench_dir)
         .env("WEBUI_ADDON_PATH", &addon_path)
         .env_remove("WEBUI_BENCH_SAVE")
@@ -672,7 +677,7 @@ fn bench_node_addon(save: Option<String>, compare: Option<String>) -> ExitCode {
             ExitCode::FAILURE
         }
         Err(error) => {
-            eprintln!("node-addon bench: failed to spawn pnpm: {error}");
+            eprintln!("node-addon bench: failed to spawn bun: {error}");
             ExitCode::FAILURE
         }
     }
@@ -843,30 +848,30 @@ impl Step {
             node_tests::run()?;
             desktop_tests::run()?;
             run_command_quiet(
-                "pnpm",
-                &["--filter", "@microsoft/webui-desktop", "test"],
+                "bun",
+                &["run", "--filter", "@microsoft/webui-desktop", "test"],
                 None,
             )?;
             run_command_quiet(
-                "node",
+                "bun",
                 &[
-                    "--test",
-                    "crates/webui-desktop-build/tests/support/target-output.test.mjs",
+                    "test",
+                    "./crates/webui-desktop-build/tests/support/target-output.test.mjs",
                 ],
                 None,
             )?;
             run_command_quiet(
-                "node",
+                "bun",
                 &["crates/webui-desktop-build/tests/run-rust.mjs"],
                 None,
             )?;
             run_command_quiet(
-                "node",
+                "bun",
                 &["crates/webui-desktop-build/tests/run-typescript.mjs"],
                 None,
             )?;
             run_command_quiet(
-                "node",
+                "bun",
                 &[
                     "packages/webui-desktop/scripts/stage-rust-assets.mjs",
                     "--check",
@@ -924,7 +929,7 @@ impl Step {
             // so that esbuild can resolve their `exports` to real .js files.
             // Without this, a fresh checkout would fail with
             // "Could not resolve @microsoft/webui-framework".
-            run_command_quiet("pnpm", &["--filter", "@webui/docs...", "build"], None)
+            run_command_quiet("bun", &["run", "--filter", "@webui/docs...", "build"], None)
         },
     };
     const BENCH_VALIDATE: Self = Self {

@@ -17,7 +17,7 @@ For the bench-suite-wide picture, see
 cargo xtask bench node-addon
 
 # Short correctness/wiring check against an already-built addon
-pnpm --filter node-addon-bench bench:quick
+bun run --filter node-addon-bench bench:quick
 ```
 
 `cargo xtask bench node-addon` builds the release addon and
@@ -26,8 +26,8 @@ script directly, build them first:
 
 ```bash
 cargo build --release -p microsoft-webui-node
-pnpm --filter @microsoft/webui build
-pnpm --filter node-addon-bench bench
+bun run --filter @microsoft/webui build
+bun run --filter node-addon-bench bench
 ```
 
 A debug addon is rejected by normal benchmark commands. The runner's
@@ -53,7 +53,7 @@ platform, Node major version, route, or protocol size differs from the
 baseline.
 
 Underneath, xtask maps the baseline flags to `WEBUI_BENCH_SAVE` and
-`WEBUI_BENCH_COMPARE`. They can also be set when invoking `pnpm run bench`
+`WEBUI_BENCH_COMPARE`. They can also be set when invoking `bun run bench`
 directly.
 
 ## What it measures
@@ -115,7 +115,7 @@ deliberately retained immutable snapshot, not as a free per-request optimization
 For raw machine-readable output:
 
 ```bash
-pnpm --filter node-addon-bench bench:json
+bun run --filter node-addon-bench bench:json
 ```
 
 ## Why a separate integration package?

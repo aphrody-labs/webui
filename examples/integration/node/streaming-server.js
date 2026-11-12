@@ -12,11 +12,11 @@
 //
 // Prerequisites:
 //   1. Build the native addon:  cargo build -p microsoft-webui-node
-//   2. Build the packages:      pnpm --filter @microsoft/webui --filter @microsoft/webui-framework run build
-//   3. Install dependencies:    pnpm install
+//   2. Build the packages:      bun run --filter @microsoft/webui --filter @microsoft/webui-framework build
+//   3. Install dependencies:    bun install
 //
 // Usage:
-//   node streaming-server.js [--port 3040] [--batch-delay-ms 600] [--job-delay-ms 1500]
+//   bun streaming-server.js [--port 3040] [--batch-delay-ms 600] [--job-delay-ms 1500]
 
 import { createReadStream } from "node:fs";
 import { stat } from "node:fs/promises";

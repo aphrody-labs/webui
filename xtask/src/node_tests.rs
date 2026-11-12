@@ -28,14 +28,18 @@ pub(crate) fn run() -> Result<(), String> {
         ));
     }
 
-    run_command_quiet("pnpm", &["--filter", "@microsoft/webui", "build"], None)
-        .map_err(|error| format!("WebUI test package build failed:\n{error}"))?;
+    run_command_quiet(
+        "bun",
+        &["run", "--filter", "@microsoft/webui", "build"],
+        None,
+    )
+    .map_err(|error| format!("WebUI test package build failed:\n{error}"))?;
     run_checked(&mut test_command(&addon), "WebUI Node package tests")?;
     Ok(())
 }
 
 fn test_command(addon: &Path) -> Command {
-    let mut command = build_command("pnpm", &["--filter", "@microsoft/webui", "test"]);
+    let mut command = build_command("bun", &["run", "--filter", "@microsoft/webui", "test"]);
     command.env("WEBUI_ADDON_PATH", addon);
     command
 }
@@ -148,7 +152,7 @@ mod tests {
     #[test]
     fn propagates_failed_child_process_output() {
         let result = run_checked(
-            Command::new("node")
+            Command::new("bun")
                 .args(["-e", "console.error('node-suite-failure'); process.exit(1)"]),
             "WebUI Node package tests",
         );

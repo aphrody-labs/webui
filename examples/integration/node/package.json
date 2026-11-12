@@ -4,8 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "node index.js",
-    "start:streaming": "node streaming-server.js"
+    "start": "bun index.js",
+    "start:streaming": "bun streaming-server.js",
+    "start:bun-serve": "bun bun-server.js"
   },
   "dependencies": {
     "@microsoft/webui": "workspace:*",

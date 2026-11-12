@@ -14,13 +14,13 @@ export default defineConfig({
   },
   webServer: [
     {
-      command: 'pnpm run start:test-api',
+      command: 'bun run start:test-api',
       url: 'http://127.0.0.1:3030/health',
       reuseExistingServer: true,
       timeout: 30_000,
     },
     {
-      command: 'pnpm run build:deps && pnpm run build:client && pnpm run start:test-server',
+      command: 'bun run build:deps && bun run build:client && bun run start:test-server',
       url: 'http://127.0.0.1:3020/index.js',
       reuseExistingServer: true,
       timeout: 180_000,

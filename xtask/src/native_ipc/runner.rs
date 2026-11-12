@@ -27,13 +27,9 @@ pub(super) fn prepare_inputs(
 ) -> Result<Inputs, String> {
     let source = artifacts.join("source");
     plan::copy_directory(&fixture.join("web"), &source)?;
-    let mut bundle_script = Command::new("node");
+    let mut bundle_script = Command::new("bun");
     bundle_script.arg(fixture.join("build.mjs")).arg(&source);
-    process::run(
-        &mut bundle_script,
-        "node native-ipc/build.mjs",
-        PREP_TIMEOUT,
-    )?;
+    process::run(&mut bundle_script, "bun native-ipc/build.mjs", PREP_TIMEOUT)?;
     let bundle_input = artifacts.join("bundle-input");
     plan::copy_directory(&source, &bundle_input)?;
     let bundle = artifacts.join("bundle");

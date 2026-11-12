@@ -12,10 +12,10 @@ explicit HTML-only runtime imported by the app entrypoint.
 # From the repository root:
 
 # Install dependencies
-pnpm install
+bun install
 
 # Run
-pnpm start
+bun run start
 ```
 
 Or use the xtask shortcut to run from anywhere in the workspace:
@@ -34,8 +34,8 @@ and loads packaged bundles with `DesktopRuntime::from_bundle_config(...)`
 instead of relying on a static exported site:
 
 ```bash
-pnpm --dir examples/app/contact-book-manager run build:deps
-pnpm --dir examples/app/contact-book-manager run build:client
+bun run --cwd examples/app/contact-book-manager build:deps
+bun run --cwd examples/app/contact-book-manager build:client
 cargo run -p contact-book-desktop --features source
 ```
 

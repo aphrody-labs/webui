@@ -23,16 +23,11 @@ RUN apt-get update && \
         curl \
         gnupg \
         protobuf-compiler && \
-    install -d -m 0755 /etc/apt/keyrings && \
-    curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | \
-        gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg && \
-    chmod 0644 /etc/apt/keyrings/nodesource.gpg && \
-    echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_22.x nodistro main" \
-        > /etc/apt/sources.list.d/nodesource.list && \
-    apt-get update && \
-    apt-get install -y --no-install-recommends nodejs && \
-    corepack enable && \
     rm -rf /var/lib/apt/lists/*
+
+# Bun is the JavaScript runtime and package manager (package.json packageManager).
+COPY --from=oven/bun:1.4.4-debian /usr/local/bin/bun /usr/local/bin/bun
+RUN ln -s /usr/local/bin/bun /usr/local/bin/bunx
 
 # Cache Rust dependencies via cargo-chef
 COPY --from=planner /build/recipe.json recipe.json
@@ -42,40 +37,40 @@ RUN cargo chef cook --release --recipe-path recipe.json
 COPY . .
 
 # ── Build JS/TS assets ──────────────────────────────────────────────
-# Install all npm dependencies
-RUN pnpm install --frozen-lockfile
+# Install all workspace dependencies
+RUN bun install --frozen-lockfile
 
 # Build framework libraries first (needed by apps with build:deps)
-RUN pnpm --filter @microsoft/webui-framework --filter @microsoft/webui-delivery run build
+RUN bun run --filter @microsoft/webui-framework --filter @microsoft/webui-delivery build
 
 # Build each app's client assets
 RUN cd examples/app/hello-world && \
     mkdir -p dist && \
-    npx esbuild src/index.ts --bundle --outfile=dist/index.js --format=esm --minify
+    bun build src/index.ts --outfile=dist/index.js --format=esm --minify
 
-RUN cd examples/app/todo-fast && pnpm build
+RUN cd examples/app/todo-fast && bun run build
 RUN cd examples/app/calculator && \
     mkdir -p dist && \
-    npx esbuild src/index.ts --bundle --outfile=dist/index.js --format=esm --minify
+    bun build src/index.ts --outfile=dist/index.js --format=esm --minify
 
-RUN cd examples/app/todo-webui && pnpm build
-RUN cd examples/app/contact-book-manager && pnpm build
-RUN cd examples/app/component-assets && pnpm build
-RUN cd examples/app/lazy-ui && pnpm build
-RUN cd examples/app/routes && pnpm build
-RUN cd examples/app/commerce && pnpm build
-RUN cd examples/app/streaming && pnpm build
+RUN cd examples/app/todo-webui && bun run build
+RUN cd examples/app/contact-book-manager && bun run build
+RUN cd examples/app/component-assets && bun run build
+RUN cd examples/app/lazy-ui && bun run build
+RUN cd examples/app/routes && bun run build
+RUN cd examples/app/commerce && bun run build
+RUN cd examples/app/streaming && bun run build
 
 # Build the demo shell client (bundles src/index.ts → dist/index.js)
-RUN cd examples/demo && pnpm build
+RUN cd examples/demo && bun run build
 
-# Build Node.js API servers
+# Build the API servers (run by Bun through the `node` alias below)
 RUN cd examples/app/contact-book-manager && \
-    npx esbuild server/api.ts --bundle --platform=node --format=esm \
+    bun build server/api.ts --target=node --format=esm \
     --outfile=dist/api.js --packages=external
 
 RUN cd examples/app/routes/server && \
-    npx esbuild src/index.ts --bundle --platform=node --format=esm \
+    bun build src/index.ts --target=node --format=esm \
     --outfile=dist/index.js --packages=external
 
 # ── Build Rust binaries ─────────────────────────────────────────────
@@ -88,20 +83,13 @@ LABEL org.opencontainers.image.source="https://github.com/microsoft/webui"
 LABEL org.opencontainers.image.description="WebUI Demo — all example apps in one container"
 LABEL org.opencontainers.image.licenses="MIT"
 
-# Install Node.js runtime (needed for contact-book-manager & routes APIs)
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        ca-certificates \
-        curl \
-        gnupg && \
-    install -d -m 0755 /etc/apt/keyrings && \
-    curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | \
-        gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg && \
-    chmod 0644 /etc/apt/keyrings/nodesource.gpg && \
-    echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_22.x nodistro main" \
-        > /etc/apt/sources.list.d/nodesource.list && \
+# JavaScript API servers run on Bun. The demo shell spawns `node`, so `node`
+# is an alias of `bun`, as in the oven/bun image.
+COPY --from=oven/bun:1.4.4-debian /usr/local/bin/bun /usr/local/bin/bun
+RUN ln -s /usr/local/bin/bun /usr/local/bin/node && \
     apt-get update && \
-    apt-get install -y --no-install-recommends nodejs && \
+    apt-get install -y --no-install-recommends \
+        ca-certificates && \
     rm -rf /var/lib/apt/lists/* && \
     groupadd --system app && \
     useradd --system --gid app --create-home app

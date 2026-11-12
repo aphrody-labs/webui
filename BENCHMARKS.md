@@ -108,7 +108,7 @@ The docs homepage consumes only
 after matching progressive SSR, complete SSR, and headed browser runs:
 
 ```bash
-pnpm run export:summary -- \
+bun run export:summary -- \
   --input results/ssr-todo-<official-name>.json \
   --complete-input results/ssr-todo-<official-name>-complete.json \
   --browser-input results/ssr-todo-browser-outcomes-<official-name>.json \

@@ -91,7 +91,7 @@ jobs:
           skip-build: 'true'
 
       - name: Install desktop contract browsers
-        run: pnpm exec playwright install --with-deps chromium firefox webkit
+        run: bunx playwright install --with-deps chromium firefox webkit
 
       - name: Desktop release-consumer contracts (before example generation)
         run: cargo xtask desktop-acceptance
@@ -151,7 +151,7 @@ jobs:
           skip-build: 'true'
 
       - name: Install desktop contract browsers
-        run: pnpm exec playwright install --with-deps chromium firefox webkit
+        run: bunx playwright install --with-deps chromium firefox webkit
 
       - name: Desktop release-consumer contracts (before example generation)
         run: cargo xtask desktop-acceptance
@@ -233,7 +233,7 @@ jobs:
           }
 
       - name: Install desktop contract browsers
-        run: pnpm exec playwright install --with-deps chromium firefox webkit
+        run: bunx playwright install --with-deps chromium firefox webkit
 
       - name: Desktop release-consumer contracts (before example generation)
         run: cargo xtask desktop-acceptance
@@ -321,7 +321,7 @@ jobs:
         run: |
           set -euo pipefail
           package="packages/$NATIVE_PACKAGE"
-          pnpm --dir "$package" pack --pack-destination "$WEBUI_NATIVE_EXPORT_ROOT"
+          (cd "$package" && bun pm pack --destination "$WEBUI_NATIVE_EXPORT_ROOT")
           while IFS= read -r file; do
             test -s "$package/$file"
             cmp "$package/$file" "$WEBUI_NATIVE_EXPORT_ROOT/$package/$file"
@@ -335,13 +335,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          pnpm --filter @microsoft/webui build
-          pnpm --filter @microsoft/webui-desktop build
+          bun run --filter @microsoft/webui build
+          bun run --filter @microsoft/webui-desktop build
           project="$(mktemp -d)"
           version="$(jq -r .version packages/webui/package.json | tr -d '\r')"
           platform="${NATIVE_PACKAGE#webui-desktop-}"
           for name in webui "webui-$platform" webui-press "webui-press-$platform" webui-desktop "$NATIVE_PACKAGE"; do
-            pnpm --dir "packages/$name" pack --pack-destination "$project"
+            (cd "packages/$name" && bun pm pack --destination "$project")
           done
           powershell=""
           if [[ "$RUNNER_OS" == Windows ]]; then powershell="$(command -v pwsh)"; fi
@@ -394,7 +394,7 @@ jobs:
           cache-on-failure: 'true'
 
       - name: Install Playwright browsers
-        run: pnpm exec playwright install --with-deps chromium
+        run: bunx playwright install --with-deps chromium
 
       - name: Run E2E tests
         run: cargo xtask e2e
@@ -444,7 +444,7 @@ jobs:
           shared-cache-key: ubuntu-build
 
       - name: Build docs
-        run: pnpm --filter @webui/docs... build
+        run: bun run --filter '@webui/docs...' build
 
   # ── Phase 3: FFI bindings (after Linux build) ──────────────────────
   # Exercises the C ABI from Python, Go, and C#. Depends on build-linux and

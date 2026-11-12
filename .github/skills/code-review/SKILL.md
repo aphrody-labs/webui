@@ -315,7 +315,7 @@ Every behavioral change must include corresponding documentation updates. Missin
 | **AI reference updated** | If the change affects anything a code-generation AI would need to know, `docs/ai.md` must be updated. |
 | **README links to docs portal** | Package READMEs should defer to the docs portal, not duplicate content. |
 | **No stale examples** | Code examples in docs must use current API signatures, flag names, and marker formats. |
-| **docs build passes** | `cd docs && pnpm build` must succeed (catches broken links, unescaped `{{`, missing pages). |
+| **docs build passes** | `cd docs && bun run build` must succeed (catches broken links, unescaped `{{`, missing pages). |
 
 See `docs-sync` skill for the full file mapping of what-changed to which-docs-to-update.
 

@@ -6,12 +6,12 @@
 //
 // Prerequisites:
 //   1. Build the native addon: cargo build -p microsoft-webui-node
-//   2. Build the @microsoft/webui package: pnpm --filter @microsoft/webui build
-//   3. Install workspace dependencies: pnpm install
+//   2. Build the @microsoft/webui package: bun run --filter @microsoft/webui build
+//   3. Install workspace dependencies: bun install
 //
 // Usage:
-//   node index.js                                  # build + render hello-world app
-//   node index.js <protocol.bin> <state.json>      # render a pre-built protocol
+//   bun index.js                                  # build + render hello-world app
+//   bun index.js <protocol.bin> <state.json>      # render a pre-built protocol
 
 import { readFileSync } from "fs";
 import { resolve } from "path";

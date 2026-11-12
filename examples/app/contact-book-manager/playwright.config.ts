@@ -16,6 +16,6 @@ export default defineConfig({
     { name: 'chromium', use: { browserName: 'chromium' } },
   ],
   // Servers must be started separately before running tests:
-  //   pnpm start:api    (Express on 3013)
-  //   pnpm start:server (WebUI on 3003)
+  //   bun run start:api    (Express on 3013)
+  //   bun run start:server (WebUI on 3003)
 });

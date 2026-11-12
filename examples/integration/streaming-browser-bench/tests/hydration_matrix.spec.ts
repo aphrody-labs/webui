@@ -25,9 +25,9 @@
  *
  * # Baseline workflow (distinct from the transport snapshot)
  *
- *   WEBUI_BENCH_SAVE=before    pnpm test:hydration
- *   WEBUI_BENCH_COMPARE=before pnpm test:hydration
- *   WEBUI_STREAMING_HYDRATION_ENFORCE=1 WEBUI_BENCH_COMPARE=before pnpm test:hydration
+ *   WEBUI_BENCH_SAVE=before    bun run test:hydration
+ *   WEBUI_BENCH_COMPARE=before bun run test:hydration
+ *   WEBUI_STREAMING_HYDRATION_ENFORCE=1 WEBUI_BENCH_COMPARE=before bun run test:hydration
  *
  * Hydration baselines live at `target/bench-baselines/browser-hydration-<name>.json`.
  */

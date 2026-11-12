@@ -5,10 +5,10 @@
   "description": "Runtime benchmark for the WebUI Node.js addon across the V8/N-API boundary.",
   "type": "module",
   "scripts": {
-    "test": "node --check bench.mjs",
-    "bench": "node --expose-gc bench.mjs",
-    "bench:quick": "node --expose-gc bench.mjs --quick",
-    "bench:json": "node --expose-gc bench.mjs --json"
+    "test": "bun build --no-bundle --target=bun bench.mjs > /dev/null",
+    "bench": "bun --expose-gc bench.mjs",
+    "bench:quick": "bun --expose-gc bench.mjs --quick",
+    "bench:json": "bun --expose-gc bench.mjs --json"
   },
   "engines": {
     "node": ">=22.0.0"

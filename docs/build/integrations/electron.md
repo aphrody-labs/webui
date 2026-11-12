@@ -26,15 +26,15 @@ From a source checkout with workspace dependencies installed:
 ```bash
 # 1. Build the native addon
 cargo build -p microsoft-webui-node --release
-pnpm --filter @microsoft/webui build
+bun run --filter @microsoft/webui build
 
 # 2. Build an example app
-pnpm --filter contact-book-manager build
+bun run --filter contact-book-manager build
 
 # 3. Run it in Electron
 cd examples/integration/electron
-pnpm build
-pnpm exec electron dist/main.js ../../app/contact-book-manager/dist ../../app/contact-book-manager/data/state.json --plugin=webui
+bun run build
+bunx electron dist/main.js ../../app/contact-book-manager/dist ../../app/contact-book-manager/data/state.json --plugin=webui
 ```
 
 ## CLI Arguments

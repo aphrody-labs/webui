@@ -235,16 +235,9 @@ async function assertLocalLinks(packageRoot: string): Promise<number> {
   return checked;
 }
 
-function runPnpm(args: string[], cwd: string): string {
-  const options = { cwd, encoding: "utf8" as const };
-  if (process.platform === "win32") {
-    return execFileSync(
-      process.env.ComSpec ?? "cmd.exe",
-      ["/d", "/s", "/c", `pnpm ${args.join(" ")}`],
-      options,
-    );
-  }
-  return execFileSync("pnpm", args, options);
+/** Run the package manager: the Bun executable running this test. */
+function runBun(args: string[], cwd: string): string {
+  return execFileSync(process.execPath, args, { cwd, encoding: "utf8" });
 }
 
 test("heading IDs preserve inline code and ignore HTML markup", () => {
@@ -298,7 +291,7 @@ test("prepack refreshes the reference from the canonical document", async (t) =>
   );
   assert.ok(manifest.files.includes("ai.md"));
   assert.ok(manifest.files.includes("docs/"));
-  assert.equal(manifest.scripts.prepack, "node scripts/prepare-ai.js");
+  assert.equal(manifest.scripts.prepack, "bun scripts/prepare-ai.js");
   assert.equal(manifest.exports["./docs/*"], "./docs/*");
   const sourcePages = await copySourceDocs(path.join(root, "docs"));
   const canonical = await readFile(source, "utf8");
@@ -464,7 +457,7 @@ test("a packed reference installs and all local documentation links resolve offl
   delete manifest.peerDependenciesMeta;
   manifest.scripts = { prepack: manifest.scripts.prepack };
   await writeFile(manifestPath, JSON.stringify(manifest, null, 2));
-  runPnpm(["pack"], packageRoot);
+  runBun(["pm", "pack"], packageRoot);
   const archives = (await readdir(packageRoot)).filter((file) => file.endsWith(".tgz"));
   assert.equal(archives.length, 1);
 
@@ -472,7 +465,7 @@ test("a packed reference installs and all local documentation links resolve offl
   await mkdir(app);
   await writeFile(path.join(app, "package.json"), '{"name":"consumer","version":"1.0.0","private":true}\n');
   await copyFile(path.join(packageRoot, archives[0]), path.join(app, "reference.tgz"));
-  runPnpm(["add", "--offline", "--ignore-scripts", "./reference.tgz"], app);
+  runBun(["add", "--prefer-offline", "--ignore-scripts", "./reference.tgz"], app);
 
   const reference = execFileSync(process.execPath, ["-p", "require.resolve('@microsoft/webui/ai.md')"], {
     cwd: app, encoding: "utf8",

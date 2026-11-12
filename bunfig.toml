@@ -1,0 +1,10 @@
+# Bun is the only JavaScript runtime and package manager for this workspace.
+
+[install]
+# Per-package node_modules (pnpm-like). Workspace packages see only the
+# dependencies they declare, which keeps peer and catalog drift visible.
+linker = "isolated"
+
+# No `[run] bun = true`: with Bun 1.4.4 on Windows it makes a nested
+# `bun run --filter` fail ("Failed to start process"). Scripts call `bun`
+# explicitly and start Node-shebang CLIs with `bunx --bun` instead.

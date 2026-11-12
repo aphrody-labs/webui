@@ -31,7 +31,7 @@ cargo xtask check                        # then full gate before commit
 If the change touches user-visible behavior, also run:
 
 ```bash
-cd docs && pnpm build
+cd docs && bun run build
 ```
 
 This catches broken links, VitePress syntax errors, and missing pages. See the `docs-sync` skill for which docs files to update based on what changed.

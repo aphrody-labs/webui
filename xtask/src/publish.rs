@@ -6,7 +6,7 @@
 //! Copies native binaries into npm and NuGet package directories (existing behavior),
 //! then assembles a consolidated `publish/` folder with:
 //! - `publish/native/`  — CLI binaries per platform
-//! - `publish/npm/`     — `.tgz` tarballs from `pnpm pack`
+//! - `publish/npm/`     — `.tgz` tarballs from `bun pm pack`
 //! - `publish/nuget/`   — `.nupkg` and `.snupkg` files from `dotnet pack`
 //! - `publish/crates/`  — `.crate` files from `cargo package`
 //! - `publish/wasm/`    — WASM modules + JS glue
@@ -1299,7 +1299,7 @@ fn desktop_cli_binary(platform: &PlatformEntry) -> &'static str {
 
 // ── Phase 2: npm packaging ──────────────────────────────────────────────
 
-/// Run `pnpm pack` in each `packages/*` directory and move tarballs to `publish/npm/`.
+/// Run `bun pm pack` in each `packages/*` directory and move tarballs to `publish/npm/`.
 fn pack_npm_tarballs(root: &Path) -> Result<(), String> {
     let packages_dir = root.join("packages");
     let npm_out = root.join("publish").join("npm");
@@ -1321,11 +1321,16 @@ fn pack_npm_tarballs(root: &Path) -> Result<(), String> {
             console::style(pkg_name).bold(),
         );
         run_command_quiet(
-            "pnpm",
-            &["--filter", &format!("@microsoft/{pkg_name}"), "build"],
+            "bun",
+            &[
+                "run",
+                "--filter",
+                &format!("@microsoft/{pkg_name}"),
+                "build",
+            ],
             None,
         )
-        .map_err(|e| format!("pnpm build @microsoft/{pkg_name} failed: {e}"))?;
+        .map_err(|e| format!("bun run build @microsoft/{pkg_name} failed: {e}"))?;
     }
 
     // Pack each package
@@ -1359,10 +1364,11 @@ fn pack_npm_tarballs(root: &Path) -> Result<(), String> {
             continue;
         }
 
-        // Run pnpm pack in the package directory
+        // Run bun pm pack in the package directory; like pnpm pack, it
+        // rewrites workspace: and catalog: ranges to published versions.
         let mut cmd = build_command(
-            "pnpm",
-            &["pack", "--pack-destination", &npm_out.to_string_lossy()],
+            "bun",
+            &["pm", "pack", "--destination", &npm_out.to_string_lossy()],
         );
         cmd.current_dir(&path);
         cmd.stdout(std::process::Stdio::piped());
@@ -1370,13 +1376,13 @@ fn pack_npm_tarballs(root: &Path) -> Result<(), String> {
 
         let output = cmd
             .output()
-            .map_err(|e| format!("pnpm pack failed for {pkg_name}: {e}"))?;
+            .map_err(|e| format!("bun pm pack failed for {pkg_name}: {e}"))?;
 
         if !output.status.success() {
             let stderr = String::from_utf8_lossy(&output.stderr);
             let stdout = String::from_utf8_lossy(&output.stdout);
             return Err(format!(
-                "pnpm pack failed for {pkg_name}:\n{stdout}{stderr}"
+                "bun pm pack failed for {pkg_name}:\n{stdout}{stderr}"
             ));
         }
 

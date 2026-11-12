@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import { expect, test, type Page } from '@playwright/test';
+import { readFileSync } from 'node:fs';
 
 type LazyResource =
   | 'lazy-asset'
@@ -16,13 +17,29 @@ interface WebUIWindow {
   };
 }
 
+/**
+ * Classify emitted JavaScript by the module each output was built from, using
+ * the client metafile that build.mjs writes, instead of bundler file naming.
+ */
+const OUTPUT_KINDS: ReadonlyMap<string, LazyResource> = (() => {
+  const metafile = JSON.parse(readFileSync('dist/client-metafile.json', 'utf8')) as {
+    outputs: Record<string, { entryPoint?: string }>;
+  };
+  const kinds = new Map<string, LazyResource>();
+  for (const [output, { entryPoint }] of Object.entries(metafile.outputs)) {
+    if (!output.endsWith('.js')) continue;
+    const name = output.slice(output.lastIndexOf('/') + 1);
+    if (entryPoint?.endsWith('lazy-panel.webui.js')) kinds.set(name, 'lazy-asset');
+    else if (entryPoint?.endsWith('secondary-panel.webui.js')) kinds.set(name, 'secondary-asset');
+    else if (entryPoint === undefined) kinds.set(name, 'bundled-chunk');
+  }
+  return kinds;
+})();
+
 function classifyLazyResource(url: string): LazyResource | undefined {
   const { pathname } = new URL(url);
-  if (/\/lazy-panel\.webui-[A-Z0-9]+\.js$/.test(pathname)) return 'lazy-asset';
-  if (/\/secondary-panel\.webui-[A-Z0-9]+\.js$/.test(pathname)) {
-    return 'secondary-asset';
-  }
-  if (/\/chunk-[A-Z0-9]+\.js$/.test(pathname)) return 'bundled-chunk';
+  const kind = OUTPUT_KINDS.get(pathname.slice(pathname.lastIndexOf('/') + 1));
+  if (kind) return kind;
   if (pathname.endsWith('/lazy-panel.css')) return 'css';
   if (pathname.endsWith('/lazy-panel-data.json')) return 'data';
   return undefined;

@@ -21,9 +21,9 @@ transfer, initialization, rendering, and memory costs.
 From a source checkout with the workspace dependencies installed:
 
 ```bash
-pnpm --filter service-worker-example build
+bun run --filter service-worker-example build
 cd examples/app/service-worker
-pnpm start
+bun run start
 ```
 
 Open `http://localhost:4175/`. The first, uncontrolled load serves a static
@@ -107,7 +107,7 @@ into the worker or make API data private.
 ## Test it
 
 ```bash
-pnpm --filter service-worker-example test
+bun run --filter service-worker-example test
 ```
 
 The Playwright test verifies service worker control, visible rendered chunks,

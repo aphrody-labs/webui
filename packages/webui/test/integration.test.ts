@@ -143,11 +143,11 @@ test('all example production scripts perform at most one full WebUI compilation'
       const script = pending.pop();
       assert.ok(script !== undefined);
       compilations += [...script.matchAll(/-- build\b/g)].length;
-      if (script.includes('node build.mjs')) {
+      if (script.includes('bun build.mjs')) {
         assert.match(readFileSync(join(root, entry.name, 'build.mjs'), 'utf8'), /runWebUIBuild\(/);
         compilations++;
       }
-      for (const [, name] of script.matchAll(/pnpm run ([\w:-]+)/g)) {
+      for (const [, name] of script.matchAll(/bun run (?!-)([\w:-]+)/g)) {
         assert.ok(scripts[name], `${entry.name}: missing ${name}`);
         pending.push(scripts[name]);
       }

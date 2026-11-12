@@ -7,7 +7,7 @@
   "plugin": "webui",
   "icon": "desktop/icon.icns",
   "runnerCrate": "contact-book-desktop",
-  "packageManager": "pnpm",
+  "packageManager": "bun",
   "buildScripts": ["build:deps", "build:client"],
   "appId": "com.microsoft.webui.contactbook",
   "appName": "Contact Book Manager",

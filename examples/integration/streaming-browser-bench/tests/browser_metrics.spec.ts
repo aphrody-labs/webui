@@ -20,9 +20,9 @@
  *
  * # Baseline workflow (before/after comparison)
  *
- *   WEBUI_BENCH_SAVE=before pnpm test     # save current numbers as 'before'
+ *   WEBUI_BENCH_SAVE=before bun run test     # save current numbers as 'before'
  *   …make change…
- *   WEBUI_BENCH_COMPARE=before pnpm test  # run + diff vs 'before'
+ *   WEBUI_BENCH_COMPARE=before bun run test  # run + diff vs 'before'
  *
  * Baselines live at `target/bench-baselines/browser-<name>.json`.
  */

@@ -18,7 +18,7 @@ overlay's state from the sample API.
 
 ```bash
 # From the repository root
-pnpm install
+bun install
 cargo xtask dev lazy-ui
 ```
 
@@ -99,7 +99,7 @@ settings pack names it, and the dialog's template data also lists it for the
 region (`lc`), so the browser requests it together with the pack instead of
 after it.
 
-`pnpm run build` first builds the native addon and workspace packages, runs
+`bun run build` first builds the native addon and workspace packages, runs
 `build.mjs`, then type-checks. The shared `../../build-client.mjs` orchestration:
 
 1. Calls `prepareBuild()` once and writes `.webui/lazy.webui.js` and its
@@ -158,8 +158,8 @@ twice.
 ## Tests
 
 ```bash
-pnpm --dir examples/app/lazy-ui build
-pnpm --dir examples/app/lazy-ui test
+bun run --cwd examples/app/lazy-ui build
+bun run --cwd examples/app/lazy-ui test
 ```
 
 The tests cover initial omission, the idle prefetch without rendering or state,

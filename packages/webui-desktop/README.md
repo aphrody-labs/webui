@@ -303,10 +303,10 @@ before generated codecs can narrow an integer or length.
 From this package directory:
 
 ```sh
-pnpm build
-node scripts/build.mjs
-pnpm test
-node scripts/generate-wire.mjs
+bun run build
+bun scripts/build.mjs
+bun run test
+bun scripts/generate-wire.mjs
 ```
 
 The TypeScript build emits normal ESM and declarations under `dist/`.
@@ -332,7 +332,7 @@ tree for Rust to embed:
 
 ```sh
 cargo xtask desktop-assets
-node scripts/stage-rust-assets.mjs --check ../../target/webui-desktop-assets/ipc
+bun scripts/stage-rust-assets.mjs --check ../../target/webui-desktop-assets/ipc
 ```
 
 Generated JavaScript is never committed. Repository Cargo builds copy the

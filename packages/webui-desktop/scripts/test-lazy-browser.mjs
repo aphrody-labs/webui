@@ -1,27 +1,31 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-// Run after `pnpm build`. Uses the workspace's existing Playwright installation.
+// Run after `bun run build`. Uses the workspace's existing Playwright installation.
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { gzipSync } from 'node:zlib';
-import { build } from 'esbuild';
 import { chromium, firefox, webkit } from '@playwright/test';
 import { defaultLimits } from '../dist/index.js';
 
 const root = new URL('../', import.meta.url);
-const result = await build({
-  entryPoints: [fileURLToPath(new URL('../../crates/webui-desktop/tests/fixtures/typed-ipc/ts/ipc.ts', root))],
-  outdir: fileURLToPath(new URL('dist-lazy-test/', root)),
-  write: false, bundle: true, splitting: true, format: 'esm', platform: 'browser',
-  target: 'es2022', minify: true, metafile: true,
-  alias: {
-    '@microsoft/webui-desktop': fileURLToPath(new URL('src/index.ts', root)),
-  },
+// In memory (no outdir); the runtime resolves to its sources, as an alias would.
+const desktopSource = fileURLToPath(new URL('src/index.ts', root));
+const result = await Bun.build({
+  entrypoints: [fileURLToPath(new URL('../../crates/webui-desktop/tests/fixtures/typed-ipc/ts/ipc.ts', root))],
+  splitting: true, format: 'esm', target: 'browser', minify: true, modulePreload: false,
+  naming: { chunk: '[name]-[hash].[ext]' },
+  plugins: [{
+    name: 'desktop-source',
+    setup(builder) {
+      builder.onResolve({ filter: /^@microsoft\/webui-desktop$/ }, () => ({ path: desktopSource }));
+    },
+  }],
 });
-const files = new Map(result.outputFiles.map(file => [`/${basename(file.path)}`, file.contents]));
+const files = new Map(await Promise.all(result.outputs.map(async file =>
+  [`/${basename(file.path)}`, new Uint8Array(await file.arrayBuffer())])));
 const deferred = [...files.keys()].filter(path => path !== '/ipc.js');
 assert.equal(deferred.length, 1);
 assert(files.get('/ipc.js').length < 512);

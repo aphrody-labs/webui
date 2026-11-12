@@ -25,12 +25,13 @@
     "wasm/"
   ],
   "scripts": {
-    "test:wasm-lazy": "node test/wasm-lazy.mjs",
-    "build": "tsc",
-    "postbuild": "node dist/install.js",
-    "prepack": "node scripts/prepare-ai.js",
+    "test:wasm-lazy": "bun test/wasm-lazy.mjs",
+    "build": "bunx --bun tsc",
+    "postbuild": "bun dist/install.js",
+    "prepack": "bun scripts/prepare-ai.js",
     "postinstall": "node --input-type=module -e \"try{await import('./dist/install.js')}catch{}\"",
-    "test": "pnpm --filter @microsoft/webui-framework build --incremental false && tsc --project tsconfig.test.json && node --test ../../examples/build-client.test.mjs dist/test/ai-reference.test.js dist/test/integration.test.js dist/test/native-addon-loading.test.js dist/test/projection-conformance.test.js dist/test/projection-compiler.test.js dist/test/projection-class-factory.test.js dist/test/projection-esbuild.test.js dist/test/projection-mixins.test.js dist/test/projection-proof.test.js dist/test/projection-parser.test.js dist/test/projection-peers.test.js"
+    "test": "bun run --cwd ../webui-framework build --incremental false && bunx --bun tsc --project tsconfig.test.json && bun test --isolate ../../examples/build-client.test.mjs ./dist/test/ai-reference.test.js ./dist/test/integration.test.js ./dist/test/native-addon-loading.test.js ./dist/test/projection-conformance.test.js ./dist/test/projection-compiler.test.js ./dist/test/projection-class-factory.test.js ./dist/test/projection-bun.test.js ./dist/test/projection-esbuild.test.js ./dist/test/projection-mixins.test.js ./dist/test/projection-proof.test.js ./dist/test/projection-parser.test.js ./dist/test/projection-peers.test.js",
+    "typecheck": "bun check && bun check -p tsconfig.test.json"
   },
   "engines": {
     "node": ">=18"
@@ -78,6 +79,7 @@
     }
   },
   "devDependencies": {
+    "@types/bun": "catalog:",
     "@types/node": "catalog:",
     "esbuild": "catalog:",
     "typescript": "catalog:",

@@ -19,16 +19,16 @@ completion arrive. Each declaration is static; no boundary executes from a
 
 ```bash
 # Install JS dependencies
-pnpm install
+bun install
 
 # Build client JS and the Node API
-pnpm build
+bun run build
 
 # Run the Node API, client watcher, and webui serve together
-pnpm start
+bun run start
 
 # Run the Playwright suite
-pnpm test
+bun run test
 ```
 
 The client build's `dist/webui-projection.json` is required. It keeps every
@@ -62,7 +62,7 @@ the final descriptor, because the CLI follows that boundary-only resume with
 the final `advance`, which completes the session:
 
 ```bash
-pnpm start:api -- --feed-delay-min-ms 200 --feed-delay-max-ms 400
+bun run start:api -- --feed-delay-min-ms 200 --feed-delay-max-ms 400
 ```
 
 For an HTML request, `webui serve` advertises

@@ -87,7 +87,7 @@ public outputs while unit compilers write their private test outputs.
 Keep the unit runner glob aligned with its compiler output directory.
 
 `cargo xtask test` builds the host native addon and the WebUI TypeScript package,
-then runs `pnpm --filter @microsoft/webui test` with `WEBUI_ADDON_PATH` set to the
+then runs `bun run --filter @microsoft/webui test` with `WEBUI_ADDON_PATH` set to the
 artifact reported by Cargo. This includes the projection compiler, adapter,
 class-factory, parser, and native build/render regressions in both the local
 `cargo xtask check` gate and the PR Test job. Browser suites run separately via
@@ -111,7 +111,7 @@ coverage with its owner rather than in `packages/webui-press/tests/`.
 Keep tutorial tests beside the Markdown lessons in `docs/start/` and
 site-navigation tests beside their regions in `docs/.webui-press/regions/`.
 The shared Press runner includes these tests through
-`pnpm --filter @microsoft/webui-press test`. Its `build:test` command type-checks
+`bun run --filter @microsoft/webui-press test`. Its `build:test` command type-checks
 and bundles these locations into `dist-test`; use unique owner-prefixed test
 filenames. Reuse the existing native and website fixture helpers. Test modules
 are not component runtime entries and must not enter the published site.
@@ -278,8 +278,8 @@ See `fixtures/dom-default/` and
 
 ```bash
 cd packages/webui-framework
-pnpm build                    # build the framework
-pnpm test                     # unit + E2E tests
+bun run build                 # build the framework
+bun run test                  # unit + E2E tests
 npx playwright test           # E2E only
 npx playwright test tests/fixtures/<name>/  # one fixture
 ```
@@ -303,4 +303,4 @@ The `packages/webui-test-support` package provides:
 | Rust performance | `cargo bench` with Criterion |
 | Framework hydration, reactive updates, DOM behavior | Playwright E2E fixtures |
 | Router navigation, lazy loading, chain diffing | Playwright E2E fixtures |
-| Template metadata encoding/decoding | Node unit tests (`pnpm test:unit`) |
+| Template metadata encoding/decoding | Node unit tests (`bun run test:unit`) |

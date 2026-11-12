@@ -18,12 +18,13 @@
     }
   },
   "scripts": {
-    "build": "tsc --project tsconfig.json",
-    "prepack": "pnpm run build",
-    "build:test": "tsc --project tsconfig.test.json --noEmit && esbuild \"tests/**/*.test.ts\" \"../../docs/.webui-press/components/**/*.test.ts\" \"../../docs/.webui-press/regions/**/*.test.ts\" \"../../docs/.webui-press/scripts/**/*.test.ts\" \"../../docs/start/**/*.test.ts\" --bundle --platform=node --format=esm --packages=external --entry-names=[name] --outdir=dist-test --out-extension:.js=.mjs",
-    "build:e2e": "cargo build -p microsoft-webui-cli -p microsoft-webui-press && pnpm --filter @webui/docs... build && pnpm run build:test",
-    "test:e2e": "node --test dist-test/**/*.test.mjs",
-    "test": "pnpm run build:e2e && pnpm run test:e2e"
+    "build": "bunx --bun tsc --project tsconfig.json",
+    "prepack": "bun run build",
+    "build:test": "bun check -p tsconfig.test.json",
+    "build:e2e": "cargo build -p microsoft-webui-cli -p microsoft-webui-press && bun run --filter @webui/docs... build && bun run build:test",
+    "test:e2e": "bun test --isolate ./tests ../../docs/.webui-press/components ../../docs/.webui-press/regions ../../docs/.webui-press/scripts ../../docs/start",
+    "test": "bun run build:e2e && bun run test:e2e",
+    "typecheck": "bun check && bun check -p tsconfig.test.json"
   },
   "optionalDependencies": {
     "@microsoft/webui-press-darwin-arm64": "workspace:*",

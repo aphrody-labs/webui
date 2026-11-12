@@ -84,3 +84,16 @@ export { compileProjection } from "./loader.js";
 // Official adapters
 export type { EsbuildProjectionOptions } from "./adapters/esbuild.js";
 export { esbuildProjection } from "./adapters/esbuild.js";
+export type {
+  BunProjectionArtifact,
+  BunProjectionBuildOutput,
+  BunProjectionOptions,
+  BunProjectionPlugin,
+  BunProjectionPluginBuild,
+} from "./adapters/bun.js";
+export { bunProjection } from "./adapters/bun.js";
+export type {
+  MetafileBuild,
+  ProjectionMetafile,
+} from "./adapters/metafile.js";
+export { emitMetafileProjection } from "./adapters/metafile.js";

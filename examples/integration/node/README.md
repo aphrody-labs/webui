@@ -1,11 +1,13 @@
 # WebUI Node.js Integration Example
 
 Minimal example showing how to use the `@microsoft/webui` npm package to build
-templates and render HTML with state data — all from Node.js.
+templates and render HTML with state data — from Bun or Node.js (the native
+addon is a Node-API module, which Bun loads too).
 
 ## Prerequisites
 
-1. Build the native addon:
+1. Build the native addon, or point `WEBUI_ADDON_PATH` at the `webui.node` of a
+   published `@microsoft/webui-<platform>` package:
 
 ```bash
 cargo build -p microsoft-webui-node
@@ -14,13 +16,13 @@ cargo build -p microsoft-webui-node
 2. Build the `@microsoft/webui` package:
 
 ```bash
-pnpm --filter @microsoft/webui build
+bun run --filter @microsoft/webui build
 ```
 
 3. Install workspace dependencies:
 
 ```bash
-pnpm install
+bun install
 ```
 
 ## Usage
@@ -28,13 +30,13 @@ pnpm install
 Build the hello-world app and render it with state data:
 
 ```bash
-node index.js
+bun index.js
 ```
 
 Or render a pre-built protocol with custom state:
 
 ```bash
-node index.js ../../app/hello-world/dist/protocol.bin ../../app/hello-world/data/state.json
+bun index.js ../../app/hello-world/dist/protocol.bin ../../app/hello-world/data/state.json
 ```
 
 This uses the `@microsoft/webui` package API (`build()` and `Protocol`) which
@@ -48,8 +50,8 @@ automatically resolves the native addon from the workspace build output.
 with no sidecar and no `webui serve`.
 
 ```bash
-pnpm --filter @microsoft/webui --filter @microsoft/webui-framework build
-node streaming-server.js
+bun run --filter @microsoft/webui --filter @microsoft/webui-framework build
+bun streaming-server.js
 # http://127.0.0.1:3040
 ```
 
@@ -147,3 +149,18 @@ from the framework's streaming entry loaded straight from
 For the full picture - interactive islands, boundary-carried module loading,
 `modulepreload` scheduling, and the measured performance story - see
 [`examples/app/streaming`](../../app/streaming/README.md).
+
+## Bun.serve
+
+`bun-server.js` is the same streaming journey on `Bun.serve`. The response body
+is an async generator: Bun pulls the next chunk only when the socket accepts
+more, which is the backpressure contract, and calls the generator's `return()`
+when the client disconnects. `request.signal` ends the waits between chunks.
+
+```bash
+bun run --filter @microsoft/webui --filter @microsoft/webui-framework build
+bun bun-server.js
+# http://127.0.0.1:3041
+```
+
+Flags match `streaming-server.js`: `--port`, `--batch-delay-ms`, `--job-delay-ms`.

@@ -12,7 +12,7 @@ No Tauri CLI or JavaScript Tauri package is needed.
 From the repository root:
 
 ```bash
-pnpm --filter hello-world-example build
+bun run --filter hello-world-example build
 cargo run --manifest-path examples/integration/tauri/Cargo.toml --locked --release -- \
   examples/app/hello-world/dist \
   examples/app/hello-world/data/state.json \

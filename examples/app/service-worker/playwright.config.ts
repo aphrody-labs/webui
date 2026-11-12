@@ -10,7 +10,7 @@ export default defineConfig({
     baseURL: 'http://127.0.0.1:4175',
   },
   webServer: {
-    command: 'node dist-scripts/serve.js --port 4175',
+    command: 'bun scripts/serve.ts --port 4175',
     url: 'http://127.0.0.1:4175',
     reuseExistingServer: !process.env['CI'],
   },

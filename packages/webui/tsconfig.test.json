@@ -5,7 +5,13 @@
     "outDir": "dist/test",
     "declaration": false,
     "declarationMap": false,
-    "sourceMap": false
+    "sourceMap": false,
+    "types": [
+      "node",
+      "bun"
+    ]
   },
-  "include": ["test"]
+  "include": [
+    "test"
+  ]
 }

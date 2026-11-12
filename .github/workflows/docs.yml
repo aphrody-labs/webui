@@ -32,7 +32,7 @@ jobs:
         uses: ./.github/actions/setup-wasm
 
       - name: Build docs
-        run: pnpm --filter @webui/docs... build
+        run: bun run --filter '@webui/docs...' build
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@84c30a85c19949d7eee79c4ff27748b70285e453 # v4.1.0

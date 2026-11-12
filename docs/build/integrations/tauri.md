@@ -16,7 +16,7 @@ Install [Tauri's platform prerequisites](https://v2.tauri.app/start/prerequisite
 and the repository's pnpm dependencies, then run from the repository root:
 
 ```bash
-pnpm --filter hello-world-example build
+bun run --filter hello-world-example build
 cargo run --manifest-path examples/integration/tauri/Cargo.toml --locked --release -- \
   examples/app/hello-world/dist \
   examples/app/hello-world/data/state.json \

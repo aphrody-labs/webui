@@ -154,10 +154,25 @@ emitted output membership. Source inputs and outputs receive exact hashes;
 opaque inputs rely on their emitted output proof. Code splitting, dynamic
 imports, output hashes, and external bundles remain application-owned.
 
+Under Bun, `bunProjection()` is the same adapter for `Bun.build` (Bun 1.4.4+),
+reading Bun's esbuild-compatible metafile. It needs only the TypeScript peer:
+
+```js
+import { bunProjection } from "@microsoft/webui/projection.js";
+
+await Bun.build({
+  entrypoints: ["src/index.ts"],
+  outdir: "dist",
+  splitting: true,
+  format: "esm",
+  plugins: [bunProjection()],
+});
+```
+
 Other bundler adapters can use the exported `AdapterContext`,
-`compileProjection()`, and conformance fixtures without importing esbuild. The
-package currently ships and supports `esbuildProjection()` as its official
-adapter. Custom adapters provide a normalized JavaScript/TypeScript source
+`compileProjection()`, `emitMetafileProjection()`, and conformance fixtures
+without importing esbuild. The package ships `esbuildProjection()` and
+`bunProjection()` as its official adapters. Custom adapters provide a normalized JavaScript/TypeScript source
 graph and exact emitted output bytes. Non-source bundler inputs stay outside
 the semantic graph, so projection does not decode or hash their input bodies.
 

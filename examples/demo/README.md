@@ -46,7 +46,7 @@ examples/demo/
 ├── data/
 │   └── state.json          ← Sample state for solo dev (`webui serve`)
 ├── dist/
-│   ├── index.js            ← Bundled client (produced by `pnpm build`)
+│   ├── index.js            ← Bundled client (produced by `bun run build`)
 │   └── webui-projection.json ← Build-time state projection manifest
 ├── server/                 ← Rust reverse-proxy + SSR host (binary: demo-shell)
 └── README.md
@@ -103,13 +103,13 @@ Build the shell client bundle once, then start the shell:
 
 ```bash
 # 1. Build the shell client bundle
-cd examples/demo && pnpm install && pnpm build && cd ../..
+cd examples/demo && bun install && bun run build && cd ../..
 
 # 2. Make sure the webui CLI is on your PATH (or install it):
 cargo install --path crates/webui-cli
 #   …or run with:  PATH="$PWD/target/debug:$PATH" cargo run -p demo-shell -- ...
 
-# 3. Pre-build each example app's client assets (run `pnpm build`
+# 3. Pre-build each example app's client assets (run `bun run build`
 #    in each examples/app/<slug>/).
 
 # 4. Run the shell
@@ -119,7 +119,7 @@ cargo run -p demo-shell -- --port 8080 --apps-dir examples/app --shell-dir examp
 To iterate on the shell template only (no proxy / app discovery), use:
 
 ```bash
-cd examples/demo && pnpm start:server    # serves examples/demo/src on :3099
+cd examples/demo && bun run start:server    # serves examples/demo/src on :3099
 ```
 
 ## Discovered Apps

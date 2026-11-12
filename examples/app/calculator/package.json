@@ -4,15 +4,15 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "build": "pnpm run build:deps && pnpm run build:client && pnpm run build:server",
-    "build:deps": "pnpm --filter @microsoft/webui --filter @microsoft/webui-framework run build",
-    "build:client": "node ../../build-client.mjs",
+    "build": "bun run build:deps && bun run build:client && bun run build:server",
+    "build:deps": "bun run --filter @microsoft/webui --filter @microsoft/webui-framework build",
+    "build:client": "bun ../../build-client.mjs",
     "build:server": "cargo run -p microsoft-webui-cli -- build ./src --plugin=webui --projection-manifest ./dist/webui-projection.json --out ./dist",
-    "start:client": "pnpm run build:deps && node ../../build-client.mjs --watch",
+    "start:client": "bun run build:deps && bun ../../build-client.mjs --watch",
     "start:server": "cargo run -p microsoft-webui-cli -- serve ./src --state ./data/state.json --plugin=webui --projection-manifest ./dist/webui-projection.json --servedir ./dist --port 3002 --watch",
     "start": "cargo xtask dev calculator",
-    "test": "playwright test",
-    "test:update-snapshots": "playwright test --update-snapshots"
+    "test": "bunx --bun playwright test",
+    "test:update-snapshots": "bunx --bun playwright test --update-snapshots"
   },
   "devDependencies": {
     "@microsoft/webui": "workspace:*",

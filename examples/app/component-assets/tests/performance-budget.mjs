@@ -25,13 +25,19 @@ const BASELINE = {
   coldRequests: 2,
 };
 
+// The baseline above was minified by esbuild plus three Terser passes. The
+// client build now uses Bun.build's minifier only (Bun 1.4.4, 2026-11-12):
+// startup 95_879 raw / 30_621 gzip / 26_934 brotli, total 98_036 / 31_733 /
+// 27_841, i.e. about +6% over the Terser baseline and on par with esbuild's own
+// minifier (total gzip 31_987). Startup and total budgets keep ~2% headroom
+// over the Bun measurement; the Main column still reports the Terser delta.
 const BUDGETS = {
-  startupRaw: 94_000,
-  startupGzip: 29_500,
-  startupBrotli: 26_000,
-  totalRaw: 96_500,
-  totalGzip: 30_700,
-  totalBrotli: 27_100,
+  startupRaw: 98_000,
+  startupGzip: 31_300,
+  startupBrotli: 27_500,
+  totalRaw: 100_000,
+  totalGzip: 32_400,
+  totalBrotli: 28_400,
   coldRaw: Math.ceil(BASELINE.coldRaw * 1.1),
   coldGzip: Math.ceil(BASELINE.coldGzip * 1.1),
   coldBrotli: Math.ceil(BASELINE.coldBrotli * 1.1),

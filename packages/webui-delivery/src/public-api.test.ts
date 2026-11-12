@@ -17,7 +17,15 @@ test('delivery has two task entrypoints and no compatibility facade', () => {
     '@microsoft/webui-delivery/preload.js', '@microsoft/webui-delivery/lazy-ndjson.js',
     '@microsoft/webui-delivery/lazy.js', '@microsoft/webui-framework/core.js',
   ]) {
-    assert.throws(() => import.meta.resolve(entry), { code: 'ERR_PACKAGE_PATH_NOT_EXPORTED' });
+    // Bun 1.4.4 reports an unexported subpath as ERR_MODULE_NOT_FOUND.
+    const code = (globalThis as { Bun?: unknown }).Bun === undefined
+      ? 'ERR_PACKAGE_PATH_NOT_EXPORTED'
+      : 'ERR_MODULE_NOT_FOUND';
+    assert.throws(() => import.meta.resolve(entry), { code });
+  }
+  // The exported subpaths resolve, so the failures above are export denials.
+  for (const entry of ['@microsoft/webui-delivery/router.js', '@microsoft/webui-delivery/resources.js']) {
+    assert.ok(import.meta.resolve(entry));
   }
 });
 

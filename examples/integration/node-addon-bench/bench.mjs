@@ -44,7 +44,7 @@ Baseline environment variables:
 
 Build prerequisites:
   cargo build --release -p microsoft-webui-node
-  pnpm --filter @microsoft/webui build`);
+  bun run --filter @microsoft/webui build`);
 }
 
 function parseArgs(argv) {

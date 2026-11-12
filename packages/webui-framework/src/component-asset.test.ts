@@ -43,7 +43,9 @@ function restoreGlobal(name: GlobalName, previous: PropertyDescriptor | undefine
 }
 
 function assetModule(source: string): string {
-  return `data:text/javascript,${encodeURIComponent(`export default ${source};`)}`;
+  // Base64 keeps the URL free of `.`: Bun 1.4.4 picks a data: URL loader from
+  // its last `.` segment, so `.parent{}` in a stylesheet made it a file asset.
+  return `data:text/javascript;base64,${Buffer.from(`export default ${source};`).toString('base64')}`;
 }
 
 function assetObjectModule(asset: unknown): string {

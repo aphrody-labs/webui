@@ -509,7 +509,7 @@ uses four narrow same-origin actions for the directory picker, dialogs,
 visible-content capture, and PNG clipboard write:
 
 ```bash
-pnpm --dir examples/app/native-services start
+bun run --cwd examples/app/native-services start
 ```
 
 ```rust

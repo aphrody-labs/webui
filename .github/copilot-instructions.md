@@ -185,7 +185,7 @@ The `docs/` directory is a VitePress site for external developers consuming WebU
 | Test a single crate | `cargo test -p webui-parser` (or any crate name) |
 | Benchmark a crate | `cargo bench -p webui-protocol` (or any crate name) |
 | Build in release mode | `cargo build --release` |
-| Docs site | `cd docs && pnpm build` |
+| Docs site | `cd docs && bun run build` |
 
 ---
 

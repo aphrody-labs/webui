@@ -4,14 +4,14 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "build": "pnpm run build:protocol && pnpm run build:client",
+    "build": "bun run build:protocol && bun run build:client",
     "build:protocol": "cargo run -p microsoft-webui-cli -- build ./src --out ./dist",
-    "build:client": "esbuild src/index.ts --bundle --outfile=dist/index.js --format=esm --sourcemap",
-    "start:client": "esbuild src/index.ts --bundle --outfile=dist/index.js --format=esm --sourcemap --watch",
+    "build:client": "bun build src/index.ts --outfile=dist/index.js --format=esm --sourcemap=linked",
+    "start:client": "bun build src/index.ts --outfile=dist/index.js --format=esm --sourcemap=linked --watch",
     "start:server": "cargo run -p microsoft-webui-cli -- serve ./src --state ./data/state.json --theme=@microsoft/webui-examples-theme --servedir ./dist --port 3000 --watch",
     "start": "cargo xtask dev hello-world",
-    "test": "playwright test",
-    "test:update-snapshots": "playwright test --update-snapshots"
+    "test": "bunx --bun playwright test",
+    "test:update-snapshots": "bunx --bun playwright test --update-snapshots"
   },
   "devDependencies": {
     "@microsoft/webui-examples-theme": "workspace:*",

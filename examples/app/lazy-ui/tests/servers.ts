@@ -76,7 +76,7 @@ export async function startAssetOrigin(directory: string): Promise<AssetOrigin> 
 export async function startExampleServer(stateFile: string): Promise<TestServer> {
   const binary = webuiBinary();
   if (!existsSync(binary)) {
-    throw new Error(`${binary} does not exist. Run \`pnpm run build\` in the example first.`);
+    throw new Error(`${binary} does not exist. Run \`bun run build\` in the example first.`);
   }
   const port = await freePort();
   const output: string[] = [];

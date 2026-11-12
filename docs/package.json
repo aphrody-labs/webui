@@ -5,10 +5,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "prepare:benchmarks": "node .webui-press/scripts/prepare-benchmarks.mjs",
-    "prepare:redirects": "node .webui-press/scripts/prepare-redirects.mjs",
-    "build": "pnpm run prepare:benchmarks && pnpm run prepare:redirects && webui press build",
-    "start": "pnpm run prepare:benchmarks && pnpm run prepare:redirects && webui press serve"
+    "prepare:benchmarks": "bun .webui-press/scripts/prepare-benchmarks.mjs",
+    "prepare:redirects": "bun .webui-press/scripts/prepare-redirects.mjs",
+    "build": "bun run prepare:benchmarks && bun run prepare:redirects && webui press build",
+    "start": "bun run prepare:benchmarks && bun run prepare:redirects && webui press serve"
   },
   "dependencies": {
     "@codemirror/commands": "catalog:",

@@ -167,6 +167,20 @@ const result = prepared.finish({ projectionManifests: [manifest] });
 writeFileSync('./dist/protocol.bin', result.protocol);
 ```
 
+With Bun, bundle with `Bun.build` and `bunProjection()` instead. The plugin
+turns on Bun's metafile and writes the manifest from the same run; a projection
+failure rejects the `Bun.build()` promise:
+
+```typescript
+import { bunProjection } from '@microsoft/webui/projection.js';
+
+await Bun.build({
+  entrypoints: ['./src/index.ts'], outdir: './dist',
+  splitting: true, format: 'esm', minify: true,
+  plugins: [bunProjection({ manifest })],
+});
+```
+
 Publish `result.cssFiles` and `result.lazyPackFiles` with the protocol as
 described below. `writeModules()` uses `modulesOut`, or `appDir` when omitted,
 preserving unchanged generated files and publishing dependencies before their

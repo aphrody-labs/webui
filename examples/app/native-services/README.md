@@ -11,7 +11,7 @@ invoke the loopback endpoints by copying a fixed request header.
 On macOS or Windows, from the repository root:
 
 ```bash
-pnpm --dir examples/app/native-services start
+bun run --cwd examples/app/native-services start
 ```
 
 The clipboard action becomes available after a successful capture. Linux

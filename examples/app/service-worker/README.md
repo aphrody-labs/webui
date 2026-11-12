@@ -26,7 +26,7 @@ untrusted API state cannot inject unsafe link schemes.
 From the repository root:
 
 ```bash
-pnpm --filter service-worker-example build
+bun run --filter service-worker-example build
 ```
 
 The build step:
@@ -65,7 +65,7 @@ cargo xtask build-wasm
 
 ```bash
 cd examples/app/service-worker
-pnpm start
+bun run start
 ```
 
 Open `http://localhost:4175/`. The first load installs the service worker and
@@ -75,7 +75,7 @@ sections as the API JSON files complete.
 ## Test
 
 ```bash
-pnpm --filter service-worker-example test
+bun run --filter service-worker-example test
 ```
 
 The Playwright smoke test verifies that the page is controlled by the service

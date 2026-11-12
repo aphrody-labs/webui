@@ -25,10 +25,10 @@ A full-featured commerce demo built with WebUI — server-side rendered with cli
 cd examples/app/commerce
 
 # Install dependencies
-pnpm install
+bun install
 
 # Start the dev server (builds + serves on port 3004)
-pnpm start
+bun run start
 ```
 
 Then open http://127.0.0.1:3004
@@ -50,13 +50,13 @@ commerce.example.com {
 
 ```bash
 # Start the server first
-pnpm start:server
+bun run start:server
 
 # In another terminal, run Playwright tests
-pnpm test
+bun run test
 
 # Update visual regression snapshots
-pnpm test:update-snapshots
+bun run test:update-snapshots
 ```
 
 ## Project Structure

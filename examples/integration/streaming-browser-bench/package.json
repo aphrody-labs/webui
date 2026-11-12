@@ -5,10 +5,10 @@
   "description": "Browser-perceived transport metrics (TTFB / FCP / LCP) for buffered vs streaming SSR, plus a progressive streaming-hydration performance/memory matrix that bundles the real framework sources and measures the real streaming coordinator + WebUIElement hydration.",
   "type": "module",
   "scripts": {
-    "test": "playwright test",
-    "test:hydration": "playwright test -c playwright.hydration.config.ts",
-    "test:lazy-hydration": "playwright test -c playwright.lazy-hydration.config.ts",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "bunx --bun playwright test",
+    "test:hydration": "bunx --bun playwright test -c playwright.hydration.config.ts",
+    "test:lazy-hydration": "bunx --bun playwright test -c playwright.lazy-hydration.config.ts",
+    "typecheck": "bun check -p tsconfig.json",
     "start:server": "cargo run -p streaming-browser-bench-server --release"
   },
   "devDependencies": {
