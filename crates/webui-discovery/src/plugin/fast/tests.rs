@@ -158,3 +158,35 @@ fn package_self_reference_resolves_against_containing_root() {
     assert_eq!(resolved.root, package_root);
     assert_eq!(resolved.relative_path, PathBuf::from("./dist/component.js"));
 }
+
+#[test]
+fn fast_style_candidates_prefer_converted_webui_styles() {
+    let template = Path::new("pkg/button/button.template-webui.html");
+    let candidates = fast_style_candidates(template);
+
+    assert_eq!(
+        candidates,
+        vec![
+            PathBuf::from("pkg/button/button.template-webui.css"),
+            PathBuf::from("pkg/button/button.styles.css"),
+            PathBuf::from("pkg/button/button.css"),
+        ]
+    );
+}
+
+#[test]
+fn package_styles_prefer_template_webui_css_over_fast_styles() {
+    let root = tempfile::TempDir::new().unwrap();
+    let dir = root.path().join("dist/esm/checkbox");
+    fs::create_dir_all(&dir).unwrap();
+    let template = dir.join("checkbox.template-webui.html");
+    fs::write(&template, "<template>box</template>").unwrap();
+    fs::write(dir.join("checkbox.styles.css"), ":host{}").unwrap();
+
+    let raw = resolve_package_styles(root.path(), &template).unwrap();
+    assert_eq!(raw, Some(dir.join("checkbox.styles.css")));
+
+    fs::write(dir.join("checkbox.template-webui.css"), ":host{display:block}").unwrap();
+    let converted = resolve_package_styles(root.path(), &template).unwrap();
+    assert_eq!(converted, Some(dir.join("checkbox.template-webui.css")));
+}

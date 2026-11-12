@@ -22,7 +22,8 @@ The manifest supplies the inventory and names; these exports are only optional
 asset-location hints.
 
 Without a package-level template export, FAST uses CEM module-relative
-template/style lookup and virtual-module fallbacks, then checks parent
+template/style lookup (`<name>.template-webui.css`, then `<name>.styles.css`,
+then `<name>.css`) and virtual-module fallbacks, then checks parent
 directories within the package when needed. This supports multi-component
 packages with templates beside their JavaScript modules.
 
