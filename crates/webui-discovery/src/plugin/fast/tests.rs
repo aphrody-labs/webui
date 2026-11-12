@@ -186,7 +186,11 @@ fn package_styles_prefer_template_webui_css_over_fast_styles() {
     let raw = resolve_package_styles(root.path(), &template).unwrap();
     assert_eq!(raw, Some(dir.join("checkbox.styles.css")));
 
-    fs::write(dir.join("checkbox.template-webui.css"), ":host{display:block}").unwrap();
+    fs::write(
+        dir.join("checkbox.template-webui.css"),
+        ":host{display:block}",
+    )
+    .unwrap();
     let converted = resolve_package_styles(root.path(), &template).unwrap();
     assert_eq!(converted, Some(dir.join("checkbox.template-webui.css")));
 }
