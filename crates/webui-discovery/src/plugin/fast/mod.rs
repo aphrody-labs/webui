@@ -434,8 +434,11 @@ fn fast_style_candidates(template_path: &Path) -> Vec<PathBuf> {
     let Some(parent) = template_path.parent() else {
         return Vec::new();
     };
-    let mut candidates = Vec::with_capacity(2);
-    for suffix in [".styles.css", ".css"] {
+    // Converted WebUI styles (`<name>.template-webui.css`, emitted beside the
+    // converted template when the source stylesheet needs SSR fallbacks) win
+    // over the raw FAST stylesheet so package mode matches local discovery.
+    let mut candidates = Vec::with_capacity(3);
+    for suffix in [".template-webui.css", ".styles.css", ".css"] {
         candidates.push(parent.join(format!("{prefix}{suffix}")));
     }
     candidates
